@@ -1,0 +1,34 @@
+{
+    "manifest_version": 3,
+    "name": "Extensão de Alarme",
+    "version": "1.0",
+    "description": "Extensão para alertar quando o botão não estiver 'Pronto'.",
+    "permissions": [
+      "activeTab",
+      "tabs"
+    ],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "content_scripts": [
+      {
+        "matches": [
+            "https://sncfinesse1.totvs.com.br/*",
+            "https://sncfinesse2.totvs.com.br/*"
+        ],
+        "js": ["content.js"]
+      }
+    ],
+    "action": {
+      "default_popup": "popup.html",
+      "default_icon": {
+        "16": "icons/icon16.png",
+        "48": "icons/icon48.png"
+      }
+    },
+    "icons": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png"
+    }
+  }
+  
