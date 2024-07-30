@@ -5,7 +5,8 @@
     "description": "Extensão para alertar quando o botão não estiver 'Pronto'.",
     "permissions": [
       "activeTab",
-      "tabs"
+      "tabs",
+      "storage"
     ],
     "background": {
       "service_worker": "background.js"
@@ -16,7 +17,7 @@
             "https://sncfinesse1.totvs.com.br/*",
             "https://sncfinesse2.totvs.com.br/*"
         ],
-        "js": ["content.js"]
+        "js": ["popup.js"]
       }
     ],
     "action": {
