@@ -28,7 +28,7 @@ async function connection(username, password, agentId) {
 
     const data = await response.text();
     const finesse = xmlToJson(data);
-    return finesse;
+    return finesse.User;
 
   } catch (error) {
     if (error.name === 'AbortError') {

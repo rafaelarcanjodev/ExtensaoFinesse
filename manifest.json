@@ -8,11 +8,16 @@
       "tabs",
       "storage"
     ],
+    "web_accessible_resources": [{
+        "resources": ["audio/alarm.mp3"],
+        "matches": ["<all_urls>"]
+    }],
     "background": {
       "service_worker": "background.js"
     },
     "content_scripts": [
       {
+        "resources": ["fontawesome/css/all.min.css", "fontawesome/webfonts/*"],
         "matches": [
             "https://sncfinesse1.totvs.com.br/*",
             "https://sncfinesse2.totvs.com.br/*"

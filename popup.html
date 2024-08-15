@@ -6,18 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Extensão Finesse</title>
 
-  <!-- Connection -->
-  <script src="connection.js"></script>
-
   <!-- Front -->
   <script src="popup.js"></script>
 
   <!-- Backend -->
   <script src="background.js"></script>
 
-  <!-- Util -->
-  <script src="xmlToJson.js"></script>
-  
   <!-- Style -->
   <style>
     body {
@@ -26,40 +20,92 @@
       font-family: Arial, sans-serif;
       padding: 10px;
     }
+
     .hidden {
       display: none;
     }
+
     button {
       margin-top: 10px;
+    }
+
+    #icon-container {
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    i {
+      font-size: 24px;
     }
   </style>
 
 </head>
+
 <body>
 
   <!-- Form Login -->
-  <div id="loginDiv" class="">
+  <div id="login-div" class="">
     <h1>Login</h1>
     <form id="login-form">
       <label for="username">Usuário:</label>
       <input type="text" id="username" name="username" required>
-      <br><br>  
+      <br><br>
       <label for="password">Id de Agente:</label>
       <input type="text" id="agentId" name="agentId" required>
       <br><br>
       <label for="password">Senha:</label>
       <input type="password" id="password" name="password" required>
-      <br><br>      
+      <br><br>
       <button type="submit">Entrar</button>
     </form>
   </div>
 
 
   <!-- Home -->
-  <div id="content" class="hidden">
+  <div id="content-div" class="hidden">
     <h1>Bem-vindo!</h1>
-    <p>Você está autenticado.</p>
+    <div id="icon-circle-status" class="icon">
+      <div id="application-open-div" name="application-open-div" class="hidden">
+        <p>
+          <svg xmlns="http://www.w3.org/2000/svg" height="15" width="15"
+            viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+            <path fill="#63E6BE" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" />
+          </svg>
+          Finesse Aberto
+        </p>
+      </div>
+
+      <div id="application-closed-div" name="application-closed-div" class="hidden">
+        <p>
+          <svg xmlns="http://www.w3.org/2000/svg" height="15" width="15"
+            viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+            <path fill="#ff0000" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" />
+          </svg>
+          Finesse Fechado
+        </p>
+      </div>
+    </div>
+    <br>
+
+    <label for="agent-name-div">Agente: </label>
+    <div id="agent-name-div" name="agent-name-div"></div>
+    <br>
+
+    <label for="status-div">Status: </label>
+    <div id="status-div" name="status-div"></div>
+    <br>
+
+    <label for="reason-div">Motivo: </label>
+    <div id="reason-div" name="reason-div"></div>
+    <br><br>
+
     <button id="logout">Sair</button>
+    <br><br>
   </div>
 </body>
+
 </html>
