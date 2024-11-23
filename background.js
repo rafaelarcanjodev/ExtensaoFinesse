@@ -1,123 +1,123 @@
-let buzzerInterval;
+let buzzerIntervalStarted = false;
+let intervalId;
 const urls = ["https://sncfinesse1.totvs.com.br:8445/*", "https://sncfinesse2.totvs.com.br:8445/*"];
 
-// Start extension when install
-chrome.runtime.onInstalled.addListener(() => {
-    startInterval();
+const timer = getTimer()  
+.then(timer => {  
+    console.log(timer);  
+})  
+.catch(error => {  
+    console.error("Erro ao obter o timer:", error);  
 });
 
+
+// // Start extension on install
+// chrome.runtime.onInstalled.addListener(() => {
+//     console.log("Contador Iniciado na Instalação");
+//     stopInterval();
+//     startInterval();
+// });
+
 // Start extension when tab is updated
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    if (changeInfo.status === "complete" && isMatchingUrl(tab.url)) {
-        startInterval();
-    }
+chrome.tabs.onUpdated.addListener((changeInfo, tab) => {
+    verifyTabsActive(isActiveTabFound => {
+        if (isActiveTabFound) {
+            console.log("Contador Iniciado por uma atualização da página");
+            stopInterval();
+            startInterval();
+        } else {
+            stopInterval();
+        }
+    });
 });
 
 // Save Credentials
-chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'saveCredentials') {
         const { username, password, agentId } = message.data;
-
         const result = saveCredentials(username, password, agentId);
-
-        if (result) {
-            sendResponse({ success: true });
-        } else {
-            sendResponse({ success: false });
-        }
+        sendResponse({ success: !!result });
     }
-    return true; // Manter o canal aberto para enviar uma resposta assíncrona
-});
 
-
-// Stop Audio
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === "stopAudio") {
-        chrome.tabs.query({ url: "https://sncfinesse2.totvs.com.br/*" }, (tabs) => {
-            if (tabs.length > 0) {
-                chrome.tabs.sendMessage(tabs[0].id, { action: "stopAudio" });
-            }
-        });
+    if (message.action === 'saveTimer') {
+        const { timer } = message.data;
+        const result = saveTimer(timer);
+        sendResponse({ success: !!result });
     }
+    return true;
 });
-
 
 function startInterval() {
-    buzzerInterval = setInterval(() => {
-        verifyTabs((isActiveTabFound) => {
-            if (isActiveTabFound) {
-                checkFinesseStatus();
-            } else {
-                console.log("Nenhuma aba ativa foi encontrada. Processo interrompido.");
-            }
-        });
-    }, 10000); // Verify every 5 seconds
-}
-
-function verifyTabs(callback) {
-    chrome.tabs.query({ url: urls }, (tabs) => {
-        if (tabs && tabs.length > 0) {
-            let foundActiveTab = false;
-            tabs.forEach(tab => {
-                if (tab.active) {
-                    //console.log("Tab ativa encontrada:", tab.url);
-                    foundActiveTab = true;
-                    callback(true);
+    if (!buzzerIntervalStarted && timer) {
+        buzzerIntervalStarted = true;
+        intervalId = setInterval(() => {
+            verifyTabsActive(isActiveTabFound => {
+                if (isActiveTabFound) {
+                    checkFinesseStatus(timer);
+                } else {
+                    stopInterval();
                 }
             });
+        }, timer);
+    }
+}
 
-            if (!foundActiveTab) {
-                callback(false);
-            }
+function stopInterval() {
+    if (intervalId) {
+        clearInterval(intervalId);
+        buzzerIntervalStarted = false;
+        console.log("Intervalo de verificação interrompido.");
+    }
+}
+
+function verifyTabsActive(callback) {
+    chrome.tabs.query({ url: urls }, (tabs) => {
+        if (tabs.length > 0) {
+            console.log("Tab encontrada");
+            callback(true);
         } else {
+            console.log("Nenhuma tab encontrada");
             callback(false);
         }
     });
 }
 
-
 function isMatchingUrl(url) {
+    console.log("Validando URL: ");
+    console.log(url);
     return urls.some(pattern => url.startsWith(pattern));
 }
 
-function checkFinesseStatus() {
-    getFinesseStatusBackground()
+function checkFinesseStatus(timer) {
+    connectApiFinesse()
         .then(finesse => {
             if (finesse) {
-                chrome.tabs.query({ url: urls }, (tabs) => {
-                    if (tabs && tabs.length > 0) {
-
-                        if (finesse.reasonCodeId && finesse.reasonCodeId['text'] == "-1") {
-                            chrome.tabs.sendMessage(tabs[0].id, { action: finesse.reasonCodeId['text'] == "-1" ? "playAudioNotReady" : "stopAudio" });
-                            focusTab();
-                        } else if (finesse.reasonCodeId && finesse.reasonCodeId['text'] == "28") {
-                            chrome.tabs.sendMessage(tabs[0].id, { action: finesse.reasonCodeId['text'] == "28" ? "playAudioDeviceError" : "stopAudio" });
-                            focusTab();
-                        } else if (finesse.reasonCodeId && finesse.reasonCodeId['text'] == "23") {
-                            chrome.tabs.sendMessage(tabs[0].id, { action: finesse.reasonCodeId['text'] == "23" ? "playAudioDeviceError" : "stopAudio" });
-                            focusTab();
-                        } else if (finesse.reasonCodeId && (finesse.reasonCodeId['text'] >= "-1" || finesse.reasonCodeId['text'] <= "22")) {
-                            setInterval(() => {
-                                chrome.tabs.sendMessage(tabs[0].id, { action: finesse.reasonCodeId['text'] >= "-1" ? "playAudioIntervalTimeExceed" : "stopAudio" });
-                                focusTab();
-                            }, 10000); // Verify every 5 seconds
-                        } else if (finesse.state['text'] == 'NOT_READY') {
-                            chrome.tabs.sendMessage(tabs[0].id, { action: finesse.state['text'] == "NOT_READY" ? "playAudioNotReady" : "stopAudio" });
-                            focusTab();
-                        }
-                    }
-                });
+                if (finesse.reasonCodeId && finesse.reasonCodeId['text'] === "-1") {
+                    notification("playAudioNotReady");
+                    focusTab();
+                } else if (finesse.reasonCodeId && finesse.reasonCodeId['text'] >= "1" && finesse.reasonCodeId['text'] <= "22") {
+                    stopInterval();
+                    setInterval(() => {
+                        notification("playAudioIntervalTimeExceed", timer);
+                        focusTab();
+                    }, timer);
+                } else if (finesse.reasonCodeId && ["28", "23"].includes(finesse.reasonCodeId['text'])) {
+                    notification("playAudioDeviceError");
+                    focusTab();
+                } else if (finesse.state['text'] === 'NOT_READY') {
+                    notification("playAudioNotReady");
+                    focusTab();
+                }
             } else {
-                console.log("No Finesse data returned.");
+                console.log("Finesse não retornou informações");
             }
         })
         .catch(error => {
-            console.error("Error retrieving Finesse Status:", error);
+            console.error("Error ao recuperar Status do Finesse:", error);
         });
 }
 
-
-async function getFinesseStatusBackground() {
+async function connectApiFinesse() {
     return new Promise((resolve, reject) => {
         getCredentials(async (username, password, agentId) => {
             if (username && password && agentId) {
@@ -128,13 +128,12 @@ async function getFinesseStatusBackground() {
                     reject(error);
                 }
             } else {
-                console.log("Entre em contato com a equipe de desenvolvimento: rafael.arcanjo@totvs.com.br");
+                console.log("Entre em contato com a equipe de desenvolvimento.");
                 resolve(null);
             }
         });
     });
 }
-
 
 function focusTab() {
     chrome.tabs.query({ url: urls }, (tabs) => {
@@ -144,20 +143,60 @@ function focusTab() {
     });
 }
 
+function notification(message, timer) {
+    const notifications = {
+        playAudioNotReady: "Telefone Desconectado - Status Não Pronto",
+        playAudioDeviceError: "Telefone Desconectado - Verifique a VPN / Cisco Jabber / Finesse",
+        playAudioIntervalTimeExceed: "Você está a " + (timer / 1000) + " segundos com o telefone em pausa"
+    };
 
+    if (notifications[message]) {
+        //windowsNotification(notifications[message]);
+    }
+}
+
+function windowsNotification(message) {
+    chrome.notifications.create({
+        type: "basic",
+        iconUrl: "./icons/icon16.png",
+        title: "Notificação Finesse",
+        message: message
+    }, function (notificationId) {
+        if (chrome.runtime.lastError) {
+            console.error("Erro ao criar notificação:", chrome.runtime.lastError);
+        }
+    });
+}
 function saveCredentials(username, password, agentId) {
     if (chrome && chrome.storage && chrome.storage.local) {
-        chrome.storage.local.set({ username, password, agentId }, function () {
-            if (chrome.runtime.lastError) {
-                console.error(chrome.runtime.lastError);
-                return false
-            } else {
-                console.log('Credenciais salvas de forma segura.');
-                return true;
-            }
-        });
+        try{
+            chrome.storage.local.set({ username, password, agentId })
+            console.log('Credenciais salvas de forma segura');
+            return true;
+        }
+        catch (error) {
+            console.log('Erro ao salvar Credenciais');
+            throw error;
+        };
+                
     } else {
-        console('chrome.storage.local não está disponível.');
+        console.error('chrome.storage.local não está disponível');
+    }
+}
+
+function saveTimer(timer) {
+    if (chrome && chrome.storage && chrome.storage.local) {
+        try{
+            chrome.storage.local.set({ timer });
+            console.log('Timer salvo de forma segura');
+            return true;
+        }
+        catch (error) {
+            console.log('Erro ao salvar o timer');        
+            throw error;
+        }
+    } else {
+        console.error('chrome.storage.local não está disponível.');
     }
 }
 
@@ -177,7 +216,26 @@ function getCredentials(callback) {
     }
 }
 
-function removeCredentials() {
+
+async function getTimer() {  
+    return new Promise((resolve, reject) => {  
+        if (chrome && chrome.storage && chrome.storage.local) {  
+            item = chrome.storage.local.get(['timer'], function (item) {  
+                if (chrome.runtime.lastError) {  
+                    console.error(chrome.runtime.lastError);  
+                    reject(chrome.runtime.lastError); 
+                    return;  
+                }   
+                resolve(item.timer);
+            });  
+        } else {  
+            console.log('chrome.storage.local não está disponível.');  
+            reject('chrome.storage.local não está disponível.');
+        }  
+    });  
+}
+
+async function removeCredentials() {
     chrome.storage.local.remove(['username', 'password', 'agentId'], function () {
         console.log('Credenciais removidas.');
     });
@@ -190,8 +248,8 @@ async function connection(username, password, agentId) {
 
     const controller = new AbortController();
     const signal = controller.signal;
-    const timeout = 5000; // 5 seconds
-    const timeoutId = setTimeout(() => controller.abort(), timeout); // start timer
+    const timeout = 5000;
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     const options = {
         method: 'GET',
@@ -203,8 +261,6 @@ async function connection(username, password, agentId) {
 
     try {
         const response = await fetch(url, options);
-
-        // Clear timeout
         clearTimeout(timeoutId);
 
         if (!response.ok) {
