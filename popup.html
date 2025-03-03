@@ -51,17 +51,19 @@
     <form id="login-form">
       <div class="mb-3">
         <label for="username" class="form-label">Usuário:</label>
+        <input type="text" class="form-control" id="username" name="username" title="nome.sobrenome@jv01.local" required>
         <input type="text" class="form-control" id="username" name="username" placeholder="nome.sobrenome@jv01.local" required>
       </div>
       <div class="mb-3">
         <label for="agentId" class="form-label">Id de Agente:</label>
+        <input type="text" class="form-control" id="agentId" name="agentId" title="cpf sem o primeiro e os dois últimos dígitos, pode ser encontrado no perfil do finesse" required>
         <input type="text" class="form-control" id="agentId" name="agentId" placeholder="cpf sem o primeiro e os dois últimos dígitos" required>
       </div>
       <div class="mb-3">
         <label for="password" class="form-label">Senha:</label>
-        <input type="password" class="form-control" id="password" name="password" required>
+        <input type="password" class="form-control" id="password" name="password" title="costuma ser 123456" required>
       </div>
-      <button type="submit" class="btn btn-primary w-100">Entrar</button>
+      <button type="submit" class="btn btn-primary w-100" id="button-form">Entrar</button>
     </form>
   </div>
 
