@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Extensão de Alarme",
   "version": "1.0",
-  "description": "Extensão para alertar quando o botão não estiver 'Pronto'.",
+  "description": "Extensão de alerta de telefonia finesse para agentes Totvs",
   "permissions": [
     "activeTab",
     "tabs",

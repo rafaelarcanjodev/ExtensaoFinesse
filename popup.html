@@ -12,118 +12,192 @@
   <!-- Style -->
   <style>
     body {
-      width: 400px;
-      height: 500px;
-      font-family: Arial, sans-serif;
-      padding: 10px;
+        width: 400px;
+        height: 500px;
+        font-family: "Poppins", var(--bs-font-sans-serif);
+        font-size: 16px;       
     }
 
-    .hidden {
-      display: none;
+    .header {
+        background-color: #007bff; /* Azul semelhante ao de um botão */
+        color: white;
+        text-align: center;
+        font-size: 20px;
+        font-weight: bold;
+        padding: 10px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
     }
 
     #icon-container {
-      width: 50px;
-      height: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
     }
 
-    i {
-      font-size: 24px;
+    #logout-btn {
+        text-decoration: none;
+        cursor: pointer !important;
     }
 
-    .custom-font-size {
-      font-size: 0.85rem;
-      /* Reduzido para 12px, por exemplo */
+    #logout-btn:hover {
+        color: #dc3545; /* Mantém a cor vermelha ao passar o mouse */
+    }
+
+    #snack-bar {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        min-width: 300px;
+        padding: 10px;
+        border-radius: 5px;
+        z-index: 9999;
+    }
+    #snack-bar-home {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        min-width: 200px;
+        text-align: center;
     }
   </style>
 
 </head>
 
 <body>
+  
+  <!-- Header -->
+  <div class="header">
+    Finesse Notifier
+  </div>
 
   <!-- Form Login -->
-  <div id="login-div" class="">
-    <h1 class="text-center">Login</h1>
-    <form id="login-form">
+  <div id="login-div" class="d-flex justify-content-center align-items-center vh-100 pt-5">
+    <form id="login-form" class="w-75">
+
       <div class="mb-3">
         <label for="username" class="form-label">Usuário:</label>
         <input type="text" class="form-control" id="username" name="username" title="nome.sobrenome@jv01.local" required>
-        <input type="text" class="form-control" id="username" name="username" placeholder="nome.sobrenome@jv01.local" required>
       </div>
+      
       <div class="mb-3">
         <label for="agentId" class="form-label">Id de Agente:</label>
-        <input type="text" class="form-control" id="agentId" name="agentId" title="cpf sem o primeiro e os dois últimos dígitos, pode ser encontrado no perfil do finesse" required>
-        <input type="text" class="form-control" id="agentId" name="agentId" placeholder="cpf sem o primeiro e os dois últimos dígitos" required>
+        <input type="text" class="form-control" id="agentId" name="agentId" title="cpf sem o primeiro e os últimos dois números" required>
       </div>
-      <div class="mb-3">
+      
+      <div class="mb-4">
         <label for="password" class="form-label">Senha:</label>
-        <input type="password" class="form-control" id="password" name="password" title="costuma ser 123456" required>
+        <input type="password" class="form-control" id="password" name="password" title="123456" required>
       </div>
-      <button type="submit" class="btn btn-primary w-100" id="button-form">Entrar</button>
+
+      <div class="mb-5">
+        <button type="submit" class="btn btn-primary w-100" id="button-form" name="button-form">Entrar</button>
+      </div>
+             
+      <div class="d-flex justify-content-center h-100">
+        <div id="snack-bar" class="alert" role="alert"></div>
+      </div>
+    
     </form>
   </div>
 
   <!-- Home -->
-  <div id="content-div" class="hidden m-2">
-
-    <h1 class="fs-5 form-label fw-bold">Finesse Monitoramento</h1>
-
-    <div id="icon-circle-status" class="icon d-flex justify-content-center">
-      <div id="application-open-div" name="application-open-div" class="hidden">
-        <p class="text-success">
-          <svg xmlns="http://www.w3.org/2000/svg" height="15" width="15" viewBox="0 0 512 512">
-            <path fill="#63E6BE" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" />
-          </svg>
-          Finesse Aberto
-        </p>
-      </div>
-
-      <div id="application-closed-div" name="application-closed-div" class="hidden">
-        <p class="text-danger">
-          <svg xmlns="http://www.w3.org/2000/svg" height="15" width="15" viewBox="0 0 512 512">
-            <path fill="#ff0000" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" />
-          </svg>
-          Finesse Fechado
-        </p>
-      </div>
-    </div>
-    <br>
-
-    <div class="table-responsive custom-font-size">
-      <table class="table table-bordered">
-        <thead>
-          <tr>
-            <th scope="col">Agente</th>
-            <th scope="col">Status</th>
-            <th scope="col">Motivo</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td id="agent-name-div" name="agent-name-div"></td>
-            <td id="status-div" name="status-div"></td>
-            <td id="reason-div" name="reason-div"></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    
-    <form id="timer-form">
-      <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
-        <p class="mt-3 form-label fw-bold">Configurar Timers</p>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <label for="timerPrincipal" class="form-label fs-15">Tempo de Ausência (Minutos)</label>
-          <input type="number" class="form-control" name="timerPrincipal" id="timerPrincipal" style="max-width: 80px;" min="1" max="120" title="Define após quanto tempo de ausência o alerta irá notificar." maxlength="3" required />
+  <div id="content-div" class="container d-flex justify-content-center align-items-center vh-100 d-none">
+    <div class="row w-90">
+      <div class="col-12">
+        <!-- Status indicator -->
+        <div id="icon-circle-status" class="icon mb-3">
+          <div id="application-open-div" class="d-none">
+            <p class="text-success">
+              <svg xmlns="http://www.w3.org/2000/svg" height="15" width="15" viewBox="0 0 512 512">
+                <path fill="#63E6BE" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" />
+              </svg>
+              Finesse Aberto
+            </p>
+          </div>
+          <div id="application-closed-div" class="d-none">
+            <p class="text-danger">
+              <svg xmlns="http://www.w3.org/2000/svg" height="15" width="15" viewBox="0 0 512 512">
+                <path fill="#ff0000" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" />
+              </svg>
+              Finesse Fechado
+            </p>
+          </div>
         </div>
-        <button type="submit" class="btn btn-primary" style="padding: 0.375rem 0.75rem;">Salvar</button>
+        
+        <!-- Table section -->
+        <div class="table-responsive mb-4">
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th scope="col">Agente</th>
+                <th scope="col">Status</th>
+                <th scope="col">Motivo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td id="agent-name-div"></td>
+                <td id="status-div"></td>
+                <td id="reason-div"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Timer form -->
+        <form id="timer-form">
+          <div class="mb-3">          
+            <p class="form-label fw-bold">Configurar Timers</p>    
+            <div class="d-flex align-items-center mb-3">
+              <label for="timerPrincipal" class="form-label me-3 mb-0">Tempo de Ausência (Minutos)</label>
+              <input type="number" class="form-control w-25 shadow-sm bg-white rounded" id="timerPrincipal" min="1" max="120" title="Define após quanto tempo de ausência o alerta irá notificar." maxlength="3" required />
+            </div>
+          </div>
+          
+          <div class="d-flex gap-2 mb-3">
+            <button id="button-save" class="btn btn-primary" type="submit">Salvar</button>        
+            <button id="button-logout" class="btn btn-danger" title="Sair">Logout</button>
+          </div>
+        </form>
+        
+        <!-- Notification area -->
+        <div class="row mt-3">
+          <div class="col-12">
+            <div id="snack-bar-home" class="alert d-none text-center" role="alert"></div>
+          </div>
+        </div>
       </div>
-    </form>
+    </div>
   </div>
 
+
+<!-- Modal de Loading
+<div id="loading-modal" class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(255, 255, 255, 0.5); z-index: 1050;">  
+    <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;">
+      <span class="visually-hidden">Carregando...</span>
+    </div>
+</div>
+
+-->
+
+<!-- Modal de Loading -->
+<div id="loading-modal" class="d-none d-block position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(255, 255, 255, 0.5); z-index: 1050;">  
+  <div class="modal-body d-flex flex-column align-items-center justify-content-center">  
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Carregando...</span>
+    </div>
+    <!--<p class="mt-2 text-primary fw-bold">Carregando...</p>-->
+  </div>
+</div>
 
   <!-- Front -->
   <script src="popup.js"></script>
