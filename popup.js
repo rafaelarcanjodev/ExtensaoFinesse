@@ -7,83 +7,103 @@ document.addEventListener('DOMContentLoaded', () => {
   const contentDiv = document.getElementById('content-div');  
   const loadingModal = document.getElementById('loading-modal');
 
-  // Retorna o timer do backend para apresentar em tela
-  getTimerBackend().then(timer => { 
-    timer = parseInt(timer, 10);
-    timer = timer / 60000;
-    timerPrincipal.value = timer;
-  }); 
+  // // Função para configurar observador de mutação
+  // function setupMutationObserver() {
+  //   const observer = new MutationObserver((mutations) => {
+  //     mutations.forEach((mutation) => {
+  //       if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+  //         checkDivVisibility();
+  //       }
+  //     });
+  //   });
 
-  // Pega o status do agente para definir se irá mostrar tela de login ou a aplicação
-  getFinesseStatusFront().then(result => {
-  if (result) {
-    showDiv(contentDiv);
-    hideDiv(loginDiv);      
-    agentStatus(result);
+  //   // Observa mudanças na classe de loginDiv e contentDiv
+  //   observer.observe(loginDiv, { attributes: true });
+  //   observer.observe(contentDiv, { attributes: true });
+  //   }
 
-  } else {
-    showDiv(loginDiv);
-    hideDiv(contentDiv);
 
-    // Validação de Formulário
-    formLogin.addEventListener('submit', (event) => {
-      event.preventDefault();
-      
-      showDiv(loadingModal);
-      hideDiv(snackBar);
-      
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
-      const agentId = document.getElementById('agentId').value;        
-
-      if (username && password && agentId) {
-        
-        chrome.runtime.sendMessage({
-          action: 'saveCredentials',
-          data: {
-            username: username,
-            password: password,
-            agentId: agentId
-          }
-        },    
-        function (response) {     
-          console.log(response);           
-          try{
-            if (!response) throw new Error("Sem resposta do servidor");
-
-            if (response.success) {
-              hideDiv(loadingModal);
-              showDiv(contentDiv);
-              hideDiv(loginDiv);        
-              agentStatus(result);
-              alert("Credenciais salvas com sucesso!");
-            } else { 
-              throw new Error("Erro ao salvar credenciais");            
-            }         
-          }
-          catch (error){
-            console.log("entrou no catch");
-            console.log(error);
-            hideDiv(loadingModal);
-            extensionNotification(error.message,'snack-bar');
-            showDiv(snackBar);
-            loginFormDataRecover(username,password,agentId);
-          }  
-        
-        }); 
-
-      } else {
-        hideDiv(loadingModal);
-        extensionNotification("Preencha todos os campos",'snack-bar');
-        showDiv(snackBar);
-      }
+    // Retorna o timer do backend para apresentar em tela
+    getTimerBackend().then(timer => { 
+      timer = parseInt(timer, 10);
+      timer = timer / 60000;
+      timerPrincipal.value = timer;
     });
-  }
-});
+
+
+    // Pega o status do agente para definir se irá mostrar tela de login ou a aplicação
+    getFinesseStatusFront().then(result => {
+
+    if (result) {
+      showDiv(contentDiv);
+      hideDiv(loginDiv);      
+      agentStatus(result);      
+
+    } else {
+      showDiv(loginDiv);
+      hideDiv(contentDiv);
+
+      // Validação de Formulário
+      formLogin.addEventListener('submit', (event) => {
+        event.preventDefault();
+        
+        showDiv(loadingModal);
+        
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const agentId = document.getElementById('agentId').value;        
+
+        if (username && password && agentId) {
+          
+          chrome.runtime.sendMessage({
+            action: 'saveCredentials',
+            data: {
+              username: username,
+              password: password,
+              agentId: agentId
+            }
+          }, function (response) {
+            console.log("Response Front:");
+            console.log(response);
+
+            try{
+              if (!response){
+                throw new Error("Sem resposta do Servidor");
+
+              } else if (response.success) {
+                hideDiv(loadingModal);
+                showDiv(contentDiv);
+                hideDiv(loginDiv);        
+                agentStatus(result);
+                alert("Login com sucesso");
+                
+              } else { 
+                throw new Error("Login Inválido");
+              }
+            }
+            catch (error){
+              console.log("entrou no catch");
+              console.log(error);
+              hideDiv(loadingModal);
+              extensionNotification(error.message,'snack-bar');
+              showDiv(snackBar);
+              loginFormDataRecover(username,password,agentId);
+              return false;
+            } 
+          }); 
+
+        } else {
+          hideDiv(loadingModal);
+          extensionNotification("Preencha todos os campos",'snack-bar');
+        }
+      });
+    }
+  });
+
+  // Configurar observador após o status inicial
+  //setupMutationObserver();
+
 }); 
-
-
-
 
 // Função para Salvar o Timer
 const formTimer = document.getElementById('timer-form');
@@ -103,43 +123,48 @@ formTimer.addEventListener('submit', (event) => {
       }
     }, function (response) {
       if (response.success) {
-        extensionNotification("Timer salvo com sucesso!",'snack-bar-home');
         showDiv(snackBar);
+        extensionNotification("Timer salvo com sucesso!",'snack-bar-home');        
 
       } else {
+        showDiv(snackBar);
         console.log(response);
         extensionNotification("Falha ao salvar o timer",'snack-bar-home');
     }
     });
   } else {
+    showDiv(snackBar);
     extensionNotification("Preencha todos os campos",'snack-bar-home');
   }
 });
 
+
 // Função que verifica a conexão com o Finesse no Backend usando callback
-async function getFinesseStatusFront(callback) {
-  connectApiFinesse((error, response) => {
-      if (error) {
-          console.log("Erro capturado no popup:", error);
-          extensionNotification("Verifique a VPN, Cisco, Finesse e Credenciais", 'snack-bar', 15000);
-          showDiv(snackBar);
-          callback(error, false);
-          return;
-      }
-
-      console.log("Resposta da API:", response); // Depuração
-
-      if (response && response.status >= 200 && response.status < 300) {
-          console.log("Conectado com sucesso. Status:", response.status);
-          callback(null, response.data); // Retorna os dados para `agentStatus()`
-      } else {
-          console.log("Erro capturado no popup: Status HTTP " + response.status);
-          extensionNotification("Falha no Login. Verifique VPN, Cisco, Finesse e Credenciais", 'snack-bar', 15000);
-          showDiv(snackBar);
-          callback("Falha na conexão", false);
-      }
-  });
+async function getFinesseStatusFront() {
+  return await connectApiFinesse();
 }
+
+// (error, response) => {
+//   if (error) {
+//       console.log("Erro capturado no popup:", error);
+//       extensionNotification("Verifique a VPN, Cisco, Finesse e Credenciais", 'snack-bar', 15000);
+//       showDiv(snackBar);
+//       callback(error, false);
+//       return;
+//   }
+
+//   console.log("Resposta da API:", response); // Depuração
+
+//   if (response && response.status >= 200 && response.status < 300) {
+//       console.log("Conectado com sucesso. Status:", response.status);
+//       callback(null, response.data); // Retorna os dados para `agentStatus()`
+//   } else {
+//       console.log("Erro capturado no popup: Status HTTP " + response.status);
+//       extensionNotification("Falha no Login. Verifique VPN, Cisco, Finesse e Credenciais", 'snack-bar', 15000);
+//       showDiv(snackBar);
+//       callback("Falha na conexão", false);
+//   }
+// });
 
 
 /* // Função Assincrona que busca o timer no Backend
@@ -162,6 +187,7 @@ async function getTimerBackend() {
   return await getTimer();
 }
 
+
 // Função recursiva para mostrar Div
 function showDiv(showDiv) {
   if (showDiv) {
@@ -172,6 +198,7 @@ function showDiv(showDiv) {
   }
 }
 
+
 // Função Recursiva para esconder div
 function hideDiv(hideDiv) {
   if (hideDiv) {
@@ -181,6 +208,7 @@ function hideDiv(hideDiv) {
     extensionNotification("Favor reiniciar extensão");
   }
 }
+
 
 // Função que recupera Dados do formulário de login
 function loginFormDataRecover(username,password,agentId){
@@ -238,6 +266,7 @@ buttonLoggout.addEventListener("click", function(event) {
       }
     }
 )
+
 
 //Valor limpo pra poder, usar o clear timeout, limpar o "cache" e colocar uma mensagem em cima da outra se for necessário.
 let notificationTimeout;
