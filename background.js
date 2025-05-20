@@ -49,22 +49,33 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
         const { username, password, agentId } = message.data;
     
         saveCredentials(username, password, agentId)
-            .then((result) => {
-                sendResponse({ success: result });
-            })
-            .catch((error) => {
-                console.error("Erro ao salvar credenciais:", error);
-                sendResponse({ success: false, error: error.message });
-            });
+        .then((result) => {
+            sendResponse({ success: result });
+        })
+        .catch((error) => {
+            console.error("Erro ao salvar credenciais:", error);
+            sendResponse({ success: false, error: error.message });
+        });        
+
+        return true;
     }
     
     
     if (message.action === 'saveTimer') {
         const { timer } = message.data;
-        const timerResult = saveTimer(timer);
-        sendResponse({ success: !!timerResult });
+
+        saveTimer(timer)
+        .then((result) => {
+            console.log("sucesso no then");
+            console.log(result);
+            sendResponse({ success: result });
+        })
+        .catch((error) => {
+            sendResponse({ success: false, error: error.message });
+        });
+
+        return true;
     }
-    return true;
 });
 
 
@@ -106,27 +117,22 @@ function stopInterval() {
 }
 
 
-// Procura aba ativa do finesse
-function verifyTabsActive(callback) {
-    chrome.tabs.query({ url: urls }, (tabs) => {
-        if (tabs && tabs.length > 0) {
-            let foundActiveTab = false;
-            tabs.forEach(tab => {
-                if (tab.active) {
-                    //console.log("Tab ativa encontrada:", tab.url);
-                    foundActiveTab = true;
-                    callback(true);
-                }
-            });
+// function verifyTabsActive(callback) {
+//     chrome.tabs.query({ url: urls }, (tabs) => {
+//         if (typeof callback !== 'function') {
+//             console.warn("callback inválido passado para verifyTabsActive");
+//             return;
+//         }
 
-            if (!foundActiveTab) {
-                callback(false);
-            }
-        } else {
-            callback(false);
-        }
-    });
-}
+//         if (tabs.length > 0) {
+//             console.log("Tab encontrada");
+//             callback(true);
+//         } else {
+//             console.log("Nenhuma tab encontrada");
+//             callback(false);
+//         }
+//     });
+// }
 
 
 
@@ -154,23 +160,23 @@ function checkFinesseStatus(timer) {
         .then(finesse => {
             if (finesse) {
                 if (finesse.reasonCodeId && finesse.reasonCodeId['text'] === "-1") {
-                    notification("playAudioNotReady");
+                    Notification.send("playAudioNotReady");
                     focusTab();
                     stopInterval();
                 } else if (finesse.reasonCodeId && finesse.reasonCodeId['text'] >= "1" && finesse.reasonCodeId['text'] <= "22") {
                     if (!intervalId) { // Evita múltiplos timers
                         intervalId = setTimeout(() => {
-                            notification("playAudioIntervalTimeExceed", timer);
+                            Notification.send("playAudioIntervalTimeExceed", timer);
                             focusTab();
                             stopInterval();
                         }, timer);
                     }
                 } else if (finesse.reasonCodeId && ["28", "23"].includes(finesse.reasonCodeId['text'])) {
-                    notification("playAudioDeviceError");
+                    Notification.send("playAudioDeviceError");
                     focusTab();
                     stopInterval();
                 } else if (finesse.state['text'] === 'NOT_READY') {
-                    notification("playAudioNotReady");
+                    Notification.send("playAudioNotReady");
                     focusTab();
                     stopInterval();
                 }
@@ -183,67 +189,13 @@ function checkFinesseStatus(timer) {
         });
 }
 
-
-// Conecta na API do Finesse
-/* async function connectApiFinesse() {
-    return new Promise((resolve, reject) => {
-        getCredentials(async (username, password, agentId) => {
-            if (username && password && agentId) {
-                try {
-                    const finesse = await connection(username, password, agentId);
-                    console.log(finesse);
-                    resolve(finesse);
-                } catch (error) {
-                    console.error("Erro ao conectar ao Finesse:", error);
-                    reject(error);
-                }
-            } else {
-                console.log("Entre em contato com a equipe de desenvolvimento.");
-                resolve(null);
-            }
-        });
-    });
-} */
-
-
-// Configuração da Notificação
-function notification(message, timer) {
-    const notifications = {
-        playAudioNotReady: "Telefone Desconectado - Status Não Pronto",
-        playAudioDeviceError: "Telefone Desconectado - Verifique a VPN / Cisco Jabber / Finesse",
-        playAudioIntervalTimeExceed: "Você está a " + (timer / 1000) + " segundos com o telefone em pausa"
-    };
-
-    if (notifications[message]) {
-        windowsNotification(notifications[message]);
-    }
-}
-
-
-// Envio da Notificação pro Windows
-function windowsNotification(message) {
-    chrome.notifications.create({
-        type: "basic",
-        iconUrl: "./icons/icon16.png",
-        title: "Notificação Finesse",
-        message: message
-    }, function (notificationId) {
-        if (chrome.runtime.lastError) {
-            console.error("Erro ao criar notificação:", chrome.runtime.lastError);
-        }
-    });
-}
-
-
-// Apagar Credenciais do navegador
-async function removeCredentials() {
+async function removeUserCredential() {
     chrome.storage.local.remove(['username', 'password', 'agentId'], function () {
         console.log('Credenciais removidas.');
     });
 }
 
 
-// Salvar Credenciais no navegador
 async function saveCredentials(username, password, agentId) {
     try {
         const finesse = await connection(username, password, agentId);
@@ -255,7 +207,6 @@ async function saveCredentials(username, password, agentId) {
             return false;
         }
 
-        // Verifica se a resposta tem um firstName válido
         if (finesse?.firstName) {  
             return new Promise((resolve, reject) => {
                 chrome.storage.local.set({ username, password, agentId }, () => {
@@ -279,9 +230,7 @@ async function saveCredentials(username, password, agentId) {
 }
 
 
-
-// Disponibilizar credenciais para o front
-function getCredentials(callback) {
+function getCredential(callback) {
     if (chrome && chrome.storage && chrome.storage.local) {
         items = chrome.storage.local.get(['username', 'password', 'agentId'], function (items) {
             if (chrome.runtime.lastError) {
@@ -296,22 +245,23 @@ function getCredentials(callback) {
 }
 
 
-// Salvar timer no navegador
 function saveTimer(timer) {
-    try{
-        chrome.storage.local.set({ timer });
-        console.log('Timer salvo de forma segura');
-        startInterval(timer);
-    }
-    catch (error) {
-        console.log('Erro ao salvar o timer');        
-        throw error;
-    }
+    return new Promise((resolve, reject) => {
+        try {
+            chrome.storage.local.set({ timer }, () => {
+                if (chrome.runtime.lastError) {
+                    return reject(chrome.runtime.lastError);
+                }
+                console.log("Timer salvo de forma segura");
+                resolve(true);
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
 }
 
 
-
-// Disponibilizar credenciais para o front
 async function getTimer() {  
     return new Promise((resolve, reject) => {  
         if (chrome && chrome.storage && chrome.storage.local) {  
@@ -333,7 +283,7 @@ async function getTimer() {
 
 async function connectApiFinesse() {
     return new Promise((resolve, reject) => {
-        getCredentials(async (username, password, agentId) => {
+        getCredential(async (username, password, agentId) => {
             if (username && password && agentId) {
                 try {
                     const finesse = await connection(username, password, agentId);
@@ -344,7 +294,6 @@ async function connectApiFinesse() {
                     reject(error);
                 }
             } else {
-                //console.log("Entre em contato com a equipe de desenvolvimento: rafael.arcanjo@totvs.com.br");
                 resolve(null);
             }
         });
@@ -352,7 +301,6 @@ async function connectApiFinesse() {
 }
 
 
-// Monta requisição para o finesse
 async function connection(username, password, agentId) {
     console.log("### Iniciando conexão API Finesse");
     const url = 'https://sncfinesse1.totvs.com.br:8445/finesse/api/User/' + agentId + '/';
@@ -380,7 +328,7 @@ async function connection(username, password, agentId) {
 
         if (!response.ok) {
             console.log("### Erro na função connection com a API finnesse");
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`### HTTP error! status: ${response.status}`);
         }
 
         const data = await response.text();
@@ -392,7 +340,8 @@ async function connection(username, password, agentId) {
         return false;
     }
 }
-// Conversor XML para Json
+
+
 function xmlToJson(xmlString) {
     function parseNode(xmlNode) {
         const obj = {};
