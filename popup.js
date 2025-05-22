@@ -128,7 +128,7 @@ formTimer.addEventListener('submit', (event) => {
 
 // Função Assincrona que busca o timer no Backend
 async function getTimerBackend() {
-  return await getTimer();
+  return await getNotificationTimer();
 }
 
 
@@ -296,23 +296,7 @@ function notification(message, timer) {
   }
 }
 
-
-// Envio da Notificação pro Windows
-function sendWindowsNotification(message) {
-  chrome.notifications.create({
-      type: "basic",
-      iconUrl: "./icons/icon16.png",
-      title: "Notificação Finesse",
-      message: message
-  }, function (notificationId) {
-      if (chrome.runtime.lastError) {
-          console.error("Erro ao criar notificação:", chrome.runtime.lastError);
-      }
-  });
-}
-
-
-// Possibilidade de Desativar em Produção
+// Desativar em Produção
 function log(...args) {
   console.log(...args);
 }

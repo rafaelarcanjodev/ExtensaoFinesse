@@ -1,46 +1,22 @@
-let buzzerIntervalStarted = false; // Intervalo que só inicia quando encontra o Finesse
-let intervalId; //Identificador do Intervalo
-const urls = ["https://sncfinesse1.totvs.com.br:8445/*","https://sncfinesse2.totvs.com.br:8445/*"]; // URL do Finesse
+var finesseActive = false;
+var intervalId;''
+var timerVerification = 360000;
+var urls = ["https://sncfinesse1.totvs.com.br:8445/*","https://sncfinesse2.totvs.com.br:8445/*"];
+var notificationTimer;
 
 
-// Temporizador das Notificações
-const timer = getTimer()
-.then(timerValue => {
-    console.log("Timer carregado:", timerValue);
-    startInterval(timerValue);
-})
-.catch(error => {
-    console.error("Erro ao obter o timer:", error);
-});
-
-
-// Acho desnecessário se a versão com updates e quando abre o popup + agendamentos, funcionar legal
-/* // Start extension when install
-chrome.runtime.onInstalled.addListener(() => {
-    startInterval();
-});
- */
-
-
-// Inicia procura por abas quando há uma atualização no navegador
+// Start extension when tab is updated
 chrome.tabs.onUpdated.addListener((changeInfo, tab) => {
-    verifyTabsActive((isActiveTabFound) => {
+    verifyTabsActive(isActiveTabFound => {
         if (isActiveTabFound) {
+            console.log("Contador Iniciado por uma atualização da página");
+            stopInterval();
             startInterval();
         } else {
             stopInterval();
         }
     });
 });
-
-
-// VErsão V3 estável, acho que tem loops, mas pode ser um teste.
-/* // Start extension when tab is updated
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    if (changeInfo.status === "complete" && isMatchingUrl(tab.url)) {
-        startInterval();
-    }
-});*/
 
 
 // Salva credenciais e timer
@@ -53,7 +29,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
             sendResponse({ success: result });
         })
         .catch((error) => {
-            console.error("Erro ao salvar credenciais:", error);
+            log("Erro ao salvar credenciais:", error);
             sendResponse({ success: false, error: error.message });
         });        
 
@@ -66,8 +42,8 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 
         saveTimer(timer)
         .then((result) => {
-            console.log("sucesso no then");
-            console.log(result);
+            log("sucesso no then");
+            log(result);
             sendResponse({ success: result });
         })
         .catch((error) => {
@@ -79,64 +55,46 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 });
 
 
-// Inicia intervalo de verificação
-async function startInterval(timer) {
-    if (buzzerIntervalStarted) return;
-    
-    buzzerIntervalStarted = true;
-    console.log("Iniciando intervalo de verificação...");
 
-    verifyTabsActive(isActiveTabFound => {
-        if (isActiveTabFound == true) {
-            //startInterval();
-        } else {
-            stopInterval();
-        }
-    });
-
-    intervalId = setInterval(async () => {
-        const isActiveTabFound = await verifyTabsActive();
-        
-        if (!isActiveTabFound) {
-            stopInterval();
-            return;
-        }
-
-        await checkFinesseStatus(timer);
-    }, timer);
-}
-
-
-// Para intervalo de verificação
-function stopInterval() {
-    if (intervalId) {
-        clearInterval(intervalId);
-        buzzerIntervalStarted = false;
-        console.log("Intervalo de verificação interrompido.");
+function startInterval() {
+    if (!finesseActive && notificationTimer) {
+        log("Intervalo de verificação iniciado");
+        finesseActive = true;
+        intervalId = setInterval(() => {
+            verifyTabsActive(isActiveTabFound => {
+                if (isActiveTabFound) {
+                    checkFinesseStatus(notificationTimer);
+                } else {
+                    stopInterval();
+                }
+            });
+        }, notificationTimer);
     }
 }
 
 
-// function verifyTabsActive(callback) {
-//     chrome.tabs.query({ url: urls }, (tabs) => {
-//         if (typeof callback !== 'function') {
-//             console.warn("callback inválido passado para verifyTabsActive");
-//             return;
-//         }
-
-//         if (tabs.length > 0) {
-//             console.log("Tab encontrada");
-//             callback(true);
-//         } else {
-//             console.log("Nenhuma tab encontrada");
-//             callback(false);
-//         }
-//     });
-// }
+function stopInterval() {
+    if (intervalId) {
+        clearInterval(intervalId);
+        finesseActive = false;
+        log("Intervalo de verificação interrompido");
+    }
+}
 
 
+function verifyTabsActive(callback) {
+    chrome.tabs.query({ url: urls }, (tabs) => {
+        if (tabs.length > 0) {
+            log("Tab encontrada");
+            callback(true);
+        } else {
+            log("Nenhuma tab encontrada");
+            callback(false);
+        }
+    });
+}
 
-// Foca na ABA do Finesse
+
 function focusTab() {
     chrome.tabs.query({ url: urls }, (tabs) => {
         if (tabs && tabs.length > 0) {
@@ -146,52 +104,44 @@ function focusTab() {
 }
 
 
-// Verifica se URL é compatível com Array cadastradO.
-function isMatchingUrl(url) {
-    console.log("Validando URL: ");
-    console.log(url);
-    return urls.some(pattern => url.includes(pattern));
-}
-
-
 // Verificam e Enviam as notificações para cada status do agente
 function checkFinesseStatus(timer) {
     connectApiFinesse()
-        .then(finesse => {
-            if (finesse) {
-                if (finesse.reasonCodeId && finesse.reasonCodeId['text'] === "-1") {
-                    Notification.send("playAudioNotReady");
-                    focusTab();
-                    stopInterval();
-                } else if (finesse.reasonCodeId && finesse.reasonCodeId['text'] >= "1" && finesse.reasonCodeId['text'] <= "22") {
-                    if (!intervalId) { // Evita múltiplos timers
-                        intervalId = setTimeout(() => {
-                            Notification.send("playAudioIntervalTimeExceed", timer);
-                            focusTab();
-                            stopInterval();
-                        }, timer);
-                    }
-                } else if (finesse.reasonCodeId && ["28", "23"].includes(finesse.reasonCodeId['text'])) {
-                    Notification.send("playAudioDeviceError");
-                    focusTab();
-                    stopInterval();
-                } else if (finesse.state['text'] === 'NOT_READY') {
-                    Notification.send("playAudioNotReady");
-                    focusTab();
-                    stopInterval();
+    .then(finesse => {
+        if (finesse) {
+            if (finesse.reasonCodeId && finesse.reasonCodeId['text'] === "-1") {
+                notification("playAudioNotReady");
+                focusTab();
+                stopInterval();
+            } else if (finesse.reasonCodeId && finesse.reasonCodeId['text'] >= "1" && finesse.reasonCodeId['text'] <= "22") {
+                if (!intervalId) { // Evita múltiplos timers
+                    intervalId = setTimeout(() => {
+                        notification("playAudioIntervalTimeExceed", timer);
+                        focusTab();
+                        stopInterval();
+                    }, timer);
                 }
-            } else {
-                console.log("Finesse não retornou informações");
+            } else if (finesse.reasonCodeId && ["28", "23"].includes(finesse.reasonCodeId['text'])) {
+                notification("playAudioDeviceError");
+                focusTab();
+                stopInterval();
+            } else if (finesse.state['text'] === 'NOT_READY') {
+                notification("playAudioNotReady");
+                focusTab();
+                stopInterval();
             }
-        })
-        .catch(error => {
-            console.error("Erro ao recuperar Status do Finesse:", error);
-        });
+        } else {
+            log("Finesse não retornou informações");
+        }
+    })
+    .catch(error => {
+        log("Erro ao recuperar Status do Finesse:", error);
+    });
 }
 
 async function removeUserCredential() {
     chrome.storage.local.remove(['username', 'password', 'agentId'], function () {
-        console.log('Credenciais removidas.');
+        log('Credenciais removidas.');
     });
 }
 
@@ -199,11 +149,11 @@ async function removeUserCredential() {
 async function saveCredentials(username, password, agentId) {
     try {
         const finesse = await connection(username, password, agentId);
-        console.log("Resposta do Finesse:" + finesse);
+        log("Resposta do Finesse:" + finesse);
 
         // Verifica se a resposta contém um erro
         if (finesse?.ApiErrors) {
-            console.error("Erro ao conectar ao Finesse:", finesse.ApiErrors);
+            log("Erro ao conectar ao Finesse:", finesse.ApiErrors);
             return false;
         }
 
@@ -211,20 +161,20 @@ async function saveCredentials(username, password, agentId) {
             return new Promise((resolve, reject) => {
                 chrome.storage.local.set({ username, password, agentId }, () => {
                     if (chrome.runtime.lastError) {                        
-                        console.error("Erro ao salvar credenciais no navegador:", chrome.runtime.lastError);
+                        log("Erro ao salvar credenciais no navegador:", chrome.runtime.lastError);
                         reject(false);
                     } else {
-                        console.log("Credenciais salvas de forma segura.");
+                        log("Credenciais salvas de forma segura.");
                         resolve(true);
                     }
                 });
             });
         } else {
-            console.error("Erro ao conectar ao Finesse: resposta inesperada");
+            log("Erro ao conectar ao Finesse: resposta inesperada");
             return false;
         }
     } catch (error) {                                
-        console.error("Erro na conexão com Finesse:", error);
+        log("Erro na conexão com Finesse:", error);
         return false;
     }       
 }
@@ -234,13 +184,13 @@ function getCredential(callback) {
     if (chrome && chrome.storage && chrome.storage.local) {
         items = chrome.storage.local.get(['username', 'password', 'agentId'], function (items) {
             if (chrome.runtime.lastError) {
-                console.error(chrome.runtime.lastError);
+                log(chrome.runtime.lastError);
                 return false;
             }
             callback(items.username, items.password, items.agentId);
         });
     } else {
-        console.log('chrome.storage.local não está disponível.');
+        log('chrome.storage.local não está disponível.');
     }
 }
 
@@ -252,7 +202,7 @@ function saveTimer(timer) {
                 if (chrome.runtime.lastError) {
                     return reject(chrome.runtime.lastError);
                 }
-                console.log("Timer salvo de forma segura");
+                log("Timer salvo de forma segura");
                 resolve(true);
             });
         } catch (e) {
@@ -262,19 +212,19 @@ function saveTimer(timer) {
 }
 
 
-async function getTimer() {  
+async function getNotificationTimer() {  
     return new Promise((resolve, reject) => {  
         if (chrome && chrome.storage && chrome.storage.local) {  
             item = chrome.storage.local.get(['timer'], function (item) {  
                 if (chrome.runtime.lastError) {  
-                    console.error(chrome.runtime.lastError);  
+                    log(chrome.runtime.lastError);  
                     reject(chrome.runtime.lastError); 
                     return;  
                 }   
                 resolve(item.timer);
             });  
         } else {  
-            console.log('chrome.storage.local não está disponível.');  
+            log('chrome.storage.local não está disponível.');  
             reject('chrome.storage.local não está disponível.');
         }  
     });  
@@ -287,10 +237,10 @@ async function connectApiFinesse() {
             if (username && password && agentId) {
                 try {
                     const finesse = await connection(username, password, agentId);
-                    console.log(finesse);
+                    log(finesse);
                     resolve(finesse);
                 } catch (error) {                    
-                    console.log("Erro na função connectApiFinesse:" + error);
+                    log("Erro na função connectApiFinesse:" + error);
                     reject(error);
                 }
             } else {
@@ -302,9 +252,9 @@ async function connectApiFinesse() {
 
 
 async function connection(username, password, agentId) {
-    console.log("### Iniciando conexão API Finesse");
+    log("### Iniciando conexão API Finesse");
     const url = 'https://sncfinesse1.totvs.com.br:8445/finesse/api/User/' + agentId + '/';
-    console.log("### " + url);
+    log("### " + url);
     const credentials = btoa(`${username}:${password}`);
 
     const controller = new AbortController();
@@ -324,10 +274,10 @@ async function connection(username, password, agentId) {
         const response = await fetch(url, options);
 
         clearTimeout(timeoutId);
-        console.log("### Limpeza de Timeout");
+        log("### Limpeza de Timeout");
 
         if (!response.ok) {
-            console.log("### Erro na função connection com a API finnesse");
+            log("### Erro na função connection com a API finnesse");
             throw new Error(`### HTTP error! status: ${response.status}`);
         }
 
@@ -336,10 +286,39 @@ async function connection(username, password, agentId) {
         return finesse;
 
     } catch (error) {
-        console.error('### Erro na conexão:', error.message);
+        log('### Erro na conexão:', error.message);
         return false;
     }
 }
+
+
+function notification(message, timer) {
+    const notifications = {
+        playAudioNotReady: "Telefone Desconectado - Status Não Pronto",
+        playAudioDeviceError: "Telefone Desconectado - Verifique a VPN / Cisco Jabber / Finesse",
+        playAudioIntervalTimeExceed: "Você está a " + (timer / 1000) + " segundos com o telefone em pausa"
+    };
+
+    if (notifications[message]) {
+        sendWindowsNotification(notifications[message]);
+    }
+}
+
+
+function sendWindowsNotification(message) {
+    chrome.notifications.create({
+        type: "basic",
+        iconUrl: "./icons/icon16.png",
+        title: "Notificação Finesse",
+        message: message
+    }, function (notificationId) {
+        if (chrome.runtime.lastError) {
+            log("Erro ao criar notificação:", chrome.runtime.lastError);
+        }
+    });
+}
+
+
 
 
 function xmlToJson(xmlString) {
@@ -396,4 +375,10 @@ function xmlToJson(xmlString) {
     }
 
     return parseXml(xmlString);
+}
+
+
+// Desativar em Produção
+function log(...args) {
+  console.log(...args);
 }
