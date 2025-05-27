@@ -1,101 +1,81 @@
-var finesseActive = false;
-var intervalId;''
-var timerVerification = 360000;
-var urls = ["https://sncfinesse1.totvs.com.br:8445/*","https://sncfinesse2.totvs.com.br:8445/*"];
+const urls = ["https://sncfinesse1.totvs.com.br:8445/*","https://sncfinesse2.totvs.com.br:8445/*"];
+
 var notificationTimer;
 
+getNotificationTimer() // Busca tempo em minuto definido pelo usuário e salvo na memória do navegador
+.then(time => {
+    time = parseInt(time, 10);
+    time = time / 60000;    
+    notificationTimer = time;
+    log("### Timer atualizado: " + notificationTimer);
+})
+.catch(error => {
+    console.error("Erro ao obter o timer:", error);
+});
 
-// Start extension when tab is updated
-chrome.tabs.onUpdated.addListener((changeInfo, tab) => {
-    verifyTabsActive(isActiveTabFound => {
-        if (isActiveTabFound) {
-            console.log("Contador Iniciado por uma atualização da página");
-            stopInterval();
-            startInterval();
+
+if(notificationTimer){    
+    chrome.alarms.create("checkAgentStatus", { periodInMinutes: notificationTimer }); // Alarme Padrão do Navegador que inicia intervalo de verificação
+}
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+    if (alarm.name === "checkAgentStatus") {
+        verifyTabsActive(isActiveTabFound => {
+            if (isActiveTabFound) {
+                checkAgentStatus(notificationTimer);
+            }
+        });
+    }
+});
+
+
+function stopAlarm(nameAlarm) {
+    chrome.alarms.clear(nameAlarm, (wasCleared) => {
+        if (wasCleared) {
+            console.log("Alarme " + nameAlarm + " parado com sucesso.");
         } else {
-            stopInterval();
+            console.log("Não foi possível parar o alarme " + nameAlarm + ".");
         }
     });
-});
+}
 
 
 // Salva credenciais e timer
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+
     if (message.action === 'saveCredentials') {
         const { username, password, agentId } = message.data;
-    
-        saveCredentials(username, password, agentId)
-        .then((result) => {
-            sendResponse({ success: result });
-        })
-        .catch((error) => {
-            log("Erro ao salvar credenciais:", error);
-            sendResponse({ success: false, error: error.message });
+        saveUserCredential(username, password, agentId)
+            .then((result) => { sendResponse({ success: result }); })
+            .catch((error) => { sendResponse({ success: false, error: error.message });
+            
         });        
-
         return true;
-    }
-    
+    }    
     
     if (message.action === 'saveTimer') {
         const { timer } = message.data;
-
-        saveTimer(timer)
-        .then((result) => {
-            log("sucesso no then");
-            log(result);
-            sendResponse({ success: result });
-        })
-        .catch((error) => {
-            sendResponse({ success: false, error: error.message });
+        saveNotificationTimer(timer)
+            .then((result) => { sendResponse({ success: result }); })
+            .catch((error) => { sendResponse({ success: false, error: error.message }); 
         });
-
         return true;
-    }
+    }    
+
 });
-
-
-
-function startInterval() {
-    if (!finesseActive && notificationTimer) {
-        log("Intervalo de verificação iniciado");
-        finesseActive = true;
-        intervalId = setInterval(() => {
-            verifyTabsActive(isActiveTabFound => {
-                if (isActiveTabFound) {
-                    checkFinesseStatus(notificationTimer);
-                } else {
-                    stopInterval();
-                }
-            });
-        }, notificationTimer);
-    }
-}
-
-
-function stopInterval() {
-    if (intervalId) {
-        clearInterval(intervalId);
-        finesseActive = false;
-        log("Intervalo de verificação interrompido");
-    }
-}
-
 
 function verifyTabsActive(callback) {
     chrome.tabs.query({ url: urls }, (tabs) => {
         if (tabs.length > 0) {
-            log("Tab encontrada");
             callback(true);
         } else {
-            log("Nenhuma tab encontrada");
             callback(false);
         }
     });
 }
 
 
-function focusTab() {
+function tabActiveFocus() {
     chrome.tabs.query({ url: urls }, (tabs) => {
         if (tabs && tabs.length > 0) {
             chrome.tabs.update(tabs[0].id, { active: true });
@@ -104,56 +84,71 @@ function focusTab() {
 }
 
 
-// Verificam e Enviam as notificações para cada status do agente
-function checkFinesseStatus(timer) {
-    connectApiFinesse()
-    .then(finesse => {
-        if (finesse) {
-            if (finesse.reasonCodeId && finesse.reasonCodeId['text'] === "-1") {
-                notification("playAudioNotReady");
-                focusTab();
-                stopInterval();
-            } else if (finesse.reasonCodeId && finesse.reasonCodeId['text'] >= "1" && finesse.reasonCodeId['text'] <= "22") {
-                if (!intervalId) { // Evita múltiplos timers
-                    intervalId = setTimeout(() => {
-                        notification("playAudioIntervalTimeExceed", timer);
-                        focusTab();
-                        stopInterval();
-                    }, timer);
-                }
-            } else if (finesse.reasonCodeId && ["28", "23"].includes(finesse.reasonCodeId['text'])) {
-                notification("playAudioDeviceError");
-                focusTab();
-                stopInterval();
-            } else if (finesse.state['text'] === 'NOT_READY') {
-                notification("playAudioNotReady");
-                focusTab();
-                stopInterval();
-            }
-        } else {
-            log("Finesse não retornou informações");
+function checkAgentStatus(notificationTimer) {
+    getUserCredentialsAndConnect()
+        .then(finesse => {
+        if (!finesse) {
+            log("Finesse não retornou informações");            
+            return;
+        }
+
+        log("### Iniciando Verificação do Status do Agente");
+        var reasonCodeId = finesse.reasonCodeId ? finesse.reasonCodeId['text'] : null;
+        var finesseState = finesse.state ? finesse.state['text'] : null;
+
+        if (reasonCodeId === "-1") {
+
+            log("### Primeira Condição " + reasonCodeId + " - " + finesseState);
+            notification("playAudioNotReady");
+            tabActiveFocus();
+            
+        } else if (reasonCodeId > "0" && reasonCodeId < "23") {    
+
+            log("### Segunda Condição " + reasonCodeId + " - " + finesseState);
+            notification("playAudioIntervalTimeExceed", notificationTimer);
+            tabActiveFocus();
+
+        } else if (["28", "23"].includes(reasonCodeId)) {      
+
+            log("### Terceira Condição " + reasonCodeId + " - " + finesseState);
+            notification("playAudioDeviceError");
+            tabActiveFocus();
+            
+        } else if (finesseState === 'NOT_READY') {   
+
+            log("### Quarta Condição " + reasonCodeId + " - " + finesseState);
+            notification("playAudioNotReady");
+            tabActiveFocus();
+            
+        } else {            
+
+            log("### Quinta Condição " + reasonCodeId + " - " + finesseState);
+            notification("playAudioDeviceError");
+            tabActiveFocus();    
+
         }
     })
     .catch(error => {
-        log("Erro ao recuperar Status do Finesse:", error);
+        log("### Erro ao recuperar Status do Finesse:", error);       
     });
 }
+
 
 async function removeUserCredential() {
     chrome.storage.local.remove(['username', 'password', 'agentId'], function () {
-        log('Credenciais removidas.');
+        log('### Credenciais removidas.');
+        stopAlarm("checkAgentStatus");
     });
 }
 
 
-async function saveCredentials(username, password, agentId) {
+async function saveUserCredential(username, password, agentId) {
     try {
-        const finesse = await connection(username, password, agentId);
-        log("Resposta do Finesse:" + finesse);
+        const finesse = await connectApiFinesse(username, password, agentId);
+        log("### Resposta do Finesse:" + finesse);
 
-        // Verifica se a resposta contém um erro
         if (finesse?.ApiErrors) {
-            log("Erro ao conectar ao Finesse:", finesse.ApiErrors);
+            log("### Erro ao conectar ao Finesse:", finesse.ApiErrors);
             return false;
         }
 
@@ -161,26 +156,26 @@ async function saveCredentials(username, password, agentId) {
             return new Promise((resolve, reject) => {
                 chrome.storage.local.set({ username, password, agentId }, () => {
                     if (chrome.runtime.lastError) {                        
-                        log("Erro ao salvar credenciais no navegador:", chrome.runtime.lastError);
+                        log("### Erro ao salvar credenciais no navegador:", chrome.runtime.lastError);
                         reject(false);
                     } else {
-                        log("Credenciais salvas de forma segura.");
+                        log("### Credenciais salvas de forma segura.");
                         resolve(true);
                     }
                 });
             });
         } else {
-            log("Erro ao conectar ao Finesse: resposta inesperada");
+            log("### Erro ao conectar ao Finesse: resposta inesperada");
             return false;
         }
     } catch (error) {                                
-        log("Erro na conexão com Finesse:", error);
+        log("### Erro na conexão com Finesse:", error);
         return false;
     }       
 }
 
 
-function getCredential(callback) {
+function getUserCredential(callback) {
     if (chrome && chrome.storage && chrome.storage.local) {
         items = chrome.storage.local.get(['username', 'password', 'agentId'], function (items) {
             if (chrome.runtime.lastError) {
@@ -195,14 +190,14 @@ function getCredential(callback) {
 }
 
 
-function saveTimer(timer) {
+function saveNotificationTimer(timer) {
     return new Promise((resolve, reject) => {
         try {
             chrome.storage.local.set({ timer }, () => {
                 if (chrome.runtime.lastError) {
                     return reject(chrome.runtime.lastError);
                 }
-                log("Timer salvo de forma segura");
+                log("### Timer salvo de forma segura");
                 resolve(true);
             });
         } catch (e) {
@@ -231,16 +226,16 @@ async function getNotificationTimer() {
 }
 
 
-async function connectApiFinesse() {
+async function getUserCredentialsAndConnect() {
     return new Promise((resolve, reject) => {
-        getCredential(async (username, password, agentId) => {
+        getUserCredential(async (username, password, agentId) => {
             if (username && password && agentId) {
                 try {
-                    const finesse = await connection(username, password, agentId);
+                    const finesse = await connectApiFinesse(username, password, agentId);
                     log(finesse);
                     resolve(finesse);
                 } catch (error) {                    
-                    log("Erro na função connectApiFinesse:" + error);
+                    log("Erro na função getUserCredentialsAndConnect:" + error);
                     reject(error);
                 }
             } else {
@@ -251,7 +246,7 @@ async function connectApiFinesse() {
 }
 
 
-async function connection(username, password, agentId) {
+async function connectApiFinesse(username, password, agentId) {
     log("### Iniciando conexão API Finesse");
     const url = 'https://sncfinesse1.totvs.com.br:8445/finesse/api/User/' + agentId + '/';
     log("### " + url);
@@ -274,10 +269,8 @@ async function connection(username, password, agentId) {
         const response = await fetch(url, options);
 
         clearTimeout(timeoutId);
-        log("### Limpeza de Timeout");
-
         if (!response.ok) {
-            log("### Erro na função connection com a API finnesse");
+            log("### Erro na função connectApiFinesse com a API finnesse");
             throw new Error(`### HTTP error! status: ${response.status}`);
         }
 
@@ -292,11 +285,12 @@ async function connection(username, password, agentId) {
 }
 
 
-function notification(message, timer) {
+function notification(message, time) {
+
     const notifications = {
         playAudioNotReady: "Telefone Desconectado - Status Não Pronto",
         playAudioDeviceError: "Telefone Desconectado - Verifique a VPN / Cisco Jabber / Finesse",
-        playAudioIntervalTimeExceed: "Você está a " + (timer / 1000) + " segundos com o telefone em pausa"
+        playAudioIntervalTimeExceed: "Você está a mais de " + time + " minutos com o telefone em pausa"
     };
 
     if (notifications[message]) {
@@ -306,6 +300,8 @@ function notification(message, timer) {
 
 
 function sendWindowsNotification(message) {
+    
+    clearAllNotifications();
     chrome.notifications.create({
         type: "basic",
         iconUrl: "./icons/icon16.png",
@@ -319,6 +315,13 @@ function sendWindowsNotification(message) {
 }
 
 
+function clearAllNotifications() {
+    chrome.notifications.getAll((notifications) => {
+        for (let notificationId in notifications) {
+            chrome.notifications.clear(notificationId, (wasCleared) => {});
+        }
+    });
+}
 
 
 function xmlToJson(xmlString) {
@@ -380,5 +383,17 @@ function xmlToJson(xmlString) {
 
 // Desativar em Produção
 function log(...args) {
-  console.log(...args);
+    const now = new Date();
+    const timestamp = formatDate(now);
+    console.log(`[${timestamp}]`, ...args);
+}
+
+function formatDate(date) {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Meses começam em 0
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
 }

@@ -7,15 +7,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const contentDiv = document.getElementById('content-div');
   const loadingModal = document.getElementById('loading-modal');
 
-  // Retorna o timer do backend para apresentar em tela
   getTimerBackend().then(timer => {
     timer = parseInt(timer, 10);
     timer = timer / 60000;
     timerPrincipal.value = timer;
   });
 
-
-  // Pega o status do agente para definir se irá mostrar tela de login ou a aplicação
   getFinesseStatusFront().then(result => {
     if (result) {
       showDiv(contentDiv);
@@ -88,9 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
 }); 
 
 
-
-
-// Função para Salvar o Timer
 const formTimer = document.getElementById('timer-form');
 const snackBar = document.getElementById('snack-bar-home');
 
@@ -109,9 +103,6 @@ formTimer.addEventListener('submit', (event) => {
         timer: timer
       }
     }, function (timer) { 
-        log("saveTimer - Response Front:");
-        log(timer);
-
         if (timer && timer.success) {
             showDiv(snackBar);
             sendSnackbarNotification("Timer salvo com sucesso!", 'snack-bar-home');
@@ -126,6 +117,7 @@ formTimer.addEventListener('submit', (event) => {
   }
 });
 
+
 // Função Assincrona que busca o timer no Backend
 async function getTimerBackend() {
   return await getNotificationTimer();
@@ -134,7 +126,7 @@ async function getTimerBackend() {
 
 // Função que verifica a conexão com o Finesse no Backend usando callback
 async function getFinesseStatusFront() {
-  return await connectApiFinesse();
+  return await getUserCredentialsAndConnect();
 }
 
 // (error, response) => {
@@ -161,11 +153,11 @@ async function getFinesseStatusFront() {
 
 
 /* // Função Assincrona que busca o timer no Backend
-async function getCredentialsBackend() {
-  return await getCredentials();
+async function getUserCredentialsBackend() {
+  return await getUserCredentials();
 }
 
-getCredentialsBackend(async (username, password, agentId) => {
+getUserCredentialsBackend(async (username, password, agentId) => {
   if (username && password && agentId) {
       loginFormDataRecover(username,password,agentId);
   } else{
@@ -173,7 +165,6 @@ getCredentialsBackend(async (username, password, agentId) => {
   }
 });
  */
-
 
 
 // Função recursiva para mostrar Div
@@ -185,6 +176,7 @@ function showDiv(showDiv) {
     sendSnackbarNotification("Favor reiniciar extensão");
   }
 }
+
 
 // Função Recursiva para esconder div
 function hideDiv(hideDiv) {
@@ -294,9 +286,4 @@ function notification(message, timer) {
   if (notifications[message]) {
       sendWindowsNotification(notifications[message]);
   }
-}
-
-// Desativar em Produção
-function log(...args) {
-  console.log(...args);
 }
