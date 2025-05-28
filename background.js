@@ -1,28 +1,31 @@
 const urls = ["https://sncfinesse1.totvs.com.br:8445/*","https://sncfinesse2.totvs.com.br:8445/*"];
 
-var notificationTimer;
+startAlarm();
 
-getNotificationTimer() // Busca tempo em minuto definido pelo usuário e salvo na memória do navegador
-.then(time => {
-    time = parseInt(time, 10);
-    time = time / 60000;    
-    notificationTimer = time;
+async function resolverTimer(){
+    var notificationTimer = await getNotificationTimer();
+    log("### Timer sem conversão: " + notificationTimer);
+
+    notificationTimer = parseInt(notificationTimer, 10);
+    notificationTimer = notificationTimer / 60000;    
     log("### Timer atualizado: " + notificationTimer);
-})
-.catch(error => {
-    console.error("Erro ao obter o timer:", error);
-});
-
-
-if(notificationTimer){    
-    chrome.alarms.create("checkAgentStatus", { periodInMinutes: notificationTimer }); // Alarme Padrão do Navegador que inicia intervalo de verificação
+    return notificationTimer;
 }
 
-chrome.alarms.onAlarm.addListener((alarm) => {
+
+async function startAlarm() {
+    var notificationTimer = await resolverTimer();
+    log("### Timer final: " + notificationTimer);
+    
+    chrome.alarms.create("checkAgentStatus", { periodInMinutes: notificationTimer });
+}
+
+
+chrome.alarms.onAlarm.addListener(async (alarm) => {
     if (alarm.name === "checkAgentStatus") {
         verifyTabsActive(isActiveTabFound => {
             if (isActiveTabFound) {
-                checkAgentStatus(notificationTimer);
+                checkAgentStatus();
             }
         });
     }
@@ -56,7 +59,11 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     if (message.action === 'saveTimer') {
         const { timer } = message.data;
         saveNotificationTimer(timer)
-            .then((result) => { sendResponse({ success: result }); })
+            .then((result) => { 
+                stopAlarm("checkAgentStatus");
+                startAlarm("checkAgentStatus");
+                sendResponse({ success: result }); 
+            })
             .catch((error) => { sendResponse({ success: false, error: error.message }); 
         });
         return true;
@@ -84,9 +91,9 @@ function tabActiveFocus() {
 }
 
 
-function checkAgentStatus(notificationTimer) {
+function checkAgentStatus() {
     getUserCredentialsAndConnect()
-        .then(finesse => {
+        .then(async finesse => {
         if (!finesse) {
             log("Finesse não retornou informações");            
             return;
@@ -102,7 +109,9 @@ function checkAgentStatus(notificationTimer) {
             notification("playAudioNotReady");
             tabActiveFocus();
             
-        } else if (reasonCodeId > "0" && reasonCodeId < "23") {    
+        } else if (reasonCodeId > "0" && reasonCodeId < "23") {               
+            
+            var notificationTimer = await resolverTimer();
 
             log("### Segunda Condição " + reasonCodeId + " - " + finesseState);
             notification("playAudioIntervalTimeExceed", notificationTimer);
