@@ -129,12 +129,6 @@ function checkAgentStatus() {
             notification("playAudioNotReady");
             tabActiveFocus();
             
-        } else {            
-
-            log("### Quinta Condição " + reasonCodeId + " - " + finesseState);
-            notification("playAudioDeviceError");
-            tabActiveFocus();    
-
         }
     })
     .catch(error => {
