@@ -270,10 +270,12 @@ async function connectApiFinesse(username, password, agentId) {
 
     try {
         const response = await fetch(url, options);
+        console.log(response);
 
         clearTimeout(timeoutId);
         if (!response.ok) {
-            log("### Erro na função connectApiFinesse com a API finnesse");
+            log("### Erro na função connectApiFinesse com a API finnesse " + response.status);
+            sendSnackbarNotification("Verifique a VPN, Cisco, Finesse e Credenciais", 'snack-bar', 3000);
             throw new Error(`### HTTP error! status: ${response.status}`);
         }
 

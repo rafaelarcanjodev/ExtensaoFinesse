@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const formLogin = document.getElementById('login-form');
   const loginDiv = document.getElementById('login-div');
   const timerPrincipal = document.getElementById('timerPrincipal');
-  const snackBar = document.getElementById("snack-bar");  
   const contentDiv = document.getElementById('content-div');
   const loadingModal = document.getElementById('loading-modal');
 
@@ -69,7 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
               log(error);
               hideDiv(loadingModal);
               sendSnackbarNotification(error.message,'snack-bar');
-              showDiv(snackBar);
               loginFormDataRecover(username,password,agentId);
               return false;
             } 
@@ -84,11 +82,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 }); 
 
+var formTimer = document.getElementById('timer-form');
+var snackBar = document.getElementById('snack-bar-home');
 
-const formTimer = document.getElementById('timer-form');
-const snackBar = document.getElementById('snack-bar-home');
-
-formTimer.addEventListener('submit', (event) => {
+formTimer.addEventListener('change', (event) => {
   event.preventDefault();
 
   var timer = document.getElementById('timerPrincipal').value;
@@ -104,15 +101,12 @@ formTimer.addEventListener('submit', (event) => {
       }
     }, function (timer) { 
         if (timer && timer.success) {
-            showDiv(snackBar);
             sendSnackbarNotification("Timer salvo com sucesso!", 'snack-bar-home');
         } else {
-            showDiv(snackBar);
             sendSnackbarNotification("Falha ao salvar o timer", 'snack-bar-home');
         }
     });
   } else {
-    showDiv(snackBar);
     sendSnackbarNotification("Preencha todos os campos",'snack-bar-home');
   }
 });
@@ -128,43 +122,6 @@ async function getTimerBackend() {
 async function getFinesseStatusFront() {
   return await getUserCredentialsAndConnect();
 }
-
-// (error, response) => {
-//   if (error) {
-//       log("Erro capturado no popup:", error);
-//       sendSnackbarNotification("Verifique a VPN, Cisco, Finesse e Credenciais", 'snack-bar', 15000);
-//       showDiv(snackBar);
-//       callback(error, false);
-//       return;
-//   }
-
-//   log("Resposta da API:", response); // Depuração
-
-//   if (response && response.status >= 200 && response.status < 300) {
-//       log("Conectado com sucesso. Status:", response.status);
-//       callback(null, response.data); // Retorna os dados para `agentStatus()`
-//   } else {
-//       log("Erro capturado no popup: Status HTTP " + response.status);
-//       sendSnackbarNotification("Falha no Login. Verifique VPN, Cisco, Finesse e Credenciais", 'snack-bar', 15000);
-//       showDiv(snackBar);
-//       callback("Falha na conexão", false);
-//   }
-// });
-
-
-/* // Função Assincrona que busca o timer no Backend
-async function getUserCredentialsBackend() {
-  return await getUserCredentials();
-}
-
-getUserCredentialsBackend(async (username, password, agentId) => {
-  if (username && password && agentId) {
-      loginFormDataRecover(username,password,agentId);
-  } else{
-    log("credenciais Não Disponiveis");
-  }
-});
- */
 
 
 // Função recursiva para mostrar Div
@@ -199,12 +156,11 @@ function loginFormDataRecover(username,password,agentId){
 
 // Função que lê objeto do finesse e retorna status do agente
 function agentStatus(finesse) {
-  var statusDiv = document.getElementById('status-div');
   var agentNameDiv = document.getElementById('agent-name-div');
   var reasonDiv = document.getElementById('reason-div');
 
   if (finesse) {
-    statusDiv.innerText = finesse.state['text'];
+    showCircleStatus(finesse.state['text']);
     agentNameDiv.innerText = finesse.firstName['text'] + " " + finesse.lastName['text'];
 
     if (finesse.state['text'] == 'READY') {
@@ -224,6 +180,19 @@ function agentStatus(finesse) {
   }
 }
 
+function showCircleStatus(agentStatus){
+  const greenCircle = document.getElementById('green-circle-div');
+  const redCircle = document.getElementById('red-circle-div');
+
+  if(agentStatus == "READY"){    
+    greenCircle.classList.remove('d-none');
+    redCircle.classList.add('d-none');
+
+  }else{
+    greenCircle.classList.add('d-none');
+    redCircle.classList.remove('d-none');
+  }
+}
 
 const buttonLoggout = document.getElementById("button-logout");
 buttonLoggout.addEventListener("click", function(event) {
@@ -248,10 +217,10 @@ buttonLoggout.addEventListener("click", function(event) {
 
 
 //Valor limpo pra poder, usar o clear timeout, limpar o "cache" e colocar uma mensagem em cima da outra se for necessário.
-let notificationTimeout;
+var notificationTimeout;
 
 function sendSnackbarNotification(message = 'Error', elementId = 'snack-bar', time = 3000){  
-  let errorMessage = document.getElementById(elementId);
+  var errorMessage = document.getElementById(elementId);
   errorMessage.textContent = message;
 
   clearTimeout(notificationTimeout);
