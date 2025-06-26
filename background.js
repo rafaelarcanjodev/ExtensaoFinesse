@@ -141,6 +141,7 @@ async function removeUserCredential() {
     chrome.storage.local.remove(['username', 'password', 'agentId'], function () {
         log('### Credenciais removidas.');
         stopAlarm("checkAgentStatus");
+        window.location.reload();
     });
 }
 

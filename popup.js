@@ -12,11 +12,12 @@ document.addEventListener('DOMContentLoaded', () => {
     timerPrincipal.value = timer;
   });
 
-  getFinesseStatusFront().then(result => {
-    if (result) {
+  getFinesseStatusFront().then(response => {
+    if (response) {
       showDiv(contentDiv);
-      hideDiv(loginDiv);      
-      agentStatus(result);      
+      hideDiv(loadingModal);
+      hideDiv(loginDiv);  
+      agentStatus(response);
 
     } else {
       showDiv(loginDiv);
@@ -44,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
               password: password,
               agentId: agentId
             }
-          }, function (response) {
+          }, async function (response) {
             log("saveCredentials - Response Front:");
             log(response);
 
@@ -53,12 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error("Sem resposta do Servidor");
 
               } else if (response.success) {
-                sendSnackbarNotification("Login com sucesso","snack-bar");
-                hideDiv(loadingModal);                
-                showDiv(contentDiv);
-                hideDiv(loginDiv);      
-                agentStatus(result);  
-                
+                window.location.reload();              
               } else { 
                 throw new Error("Login Inválido");
               }
@@ -81,6 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 }); 
+
 
 var formTimer = document.getElementById('timer-form');
 var snackBar = document.getElementById('snack-bar-home');
@@ -201,9 +198,10 @@ buttonLoggout.addEventListener("click", function(event) {
       try{
       const loginDiv = document.getElementById('login-div');
       const contentDiv = document.getElementById('content-div');
+      const menuDiv = document.getElementById('menu-content');
 
-      // Limpa Credenciais
       removeUserCredential();
+      menuDiv.classList.toggle('d-none');
       showDiv(loginDiv);
       hideDiv(contentDiv);
       return true;

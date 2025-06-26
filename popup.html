@@ -56,28 +56,28 @@
 
   <!-- Form Login -->
   <div id="login-div" class="container d-flex justify-content-center align-items-center">
-    <form id="login-form" class="row w-75">
+    <form id="login-form" class="row w-100">
 
       <div class="mb-3">
         <label for="username" class="form-label">Usuário:</label>
-        <input type="email" class="form-control" id="username" name="username" title="nome.sobrenome@jv01.local" required>
+        <input type="email" class="form-control" id="username" name="username" placeholder="nome.sobrenome@jv01.local" title="nome.sobrenome@jv01.local" required>
       </div>
       
       <div class="mb-3">
         <label for="agentId" class="form-label">Id de Agente:</label>
-        <input type="text" class="form-control" id="agentId" name="agentId" title="cpf sem o primeiro e os últimos dois números" required>
+        <input type="text" class="form-control" id="agentId" name="agentId" placeholder="99.999.999" title="cpf sem o primeiro e os últimos dois números" required>
       </div>
       
       <div class="mb-4">
         <label for="password" class="form-label">Senha:</label>
-        <input type="password" class="form-control" id="password" name="password" title="123456" required>
+        <input type="password" class="form-control" id="password" name="password" placeholder="123456" title="123456" required>
       </div>
 
-      <div class="mb-5">
+      <div>
         <button type="submit" class="btn btn-primary w-100" id="button-form" name="button-form">Entrar</button>
       </div>
              
-      <div class="d-flex justify-content-center h-100">
+      <div class="notification-div">
         <div id="snack-bar" class="alert" role="alert"></div>
       </div>
     
@@ -85,45 +85,50 @@
   </div>
 
   <!-- Home -->
-  <div id="content-div" class="container d-flex justify-content-center align-items-center d-none">
-    <div class="row w-90">
-      <div class="col-12">
-        
-        <!-- Table section -->
-        <div class="table-responsive mb-4">
-          <table class="table">
-            <thead>
-              <tr>
-                <th scope="col">Agente</th>
-                <th scope="col">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td id="agent-name-div"></td>
-                <td id="reason-div"></td>
-              </tr>
-            </tbody>
-          </table>
+  <div id="content-div" class="container d-block justify-content-center align-items-center d-none">
+        <!-- Agent -->
+        <div class="agent-div mb-4 p-3 border border-3 border-secondary-subtle rounded">
+          <div class="d-block mb-3">
+            <span>Agente conectado</span>
+            <span id="agent-name-div" class="fw-bold d-block"></span>
+          </div>
+
+          <div class="d-block">
+            <span>Status</span>
+            <span id="reason-div" class="fw-bold d-block"></span>
+          </div>
         </div>
         
         <!-- Timer form -->
-        <form id="timer-form">
-          <div class="mb-3">          
-            <p class="form-label fw-bold">Configurar Timers</p>    
-            <div class="d-flex align-items-center mb-3">
-              <label for="timerPrincipal" class="form-label me-3 mb-0">Tempo de Ausência (Minutos)</label>
-              <input type="number" class="form-control w-25 shadow-sm bg-white rounded" id="timerPrincipal" min="1" max="120" title="Define após quanto tempo de ausência o alerta irá notificar." maxlength="2" required />
+        <div id="timer-div" class="timer-div mb-2 p-3 border border-3 border-light-subtle rounded">
+          <form id="timer-form">       
+                <label for="timerPrincipal" class="form-label">Tempo de ausência</label>
+
+                <div class="d-flex"> 
+                  <input type="number" class="form-control rounded w-25" id="timerPrincipal" min="1" max="120" title="Define após quanto tempo de ausência o alerta irá notificar." maxlength="3" required />
+
+                  <button type="button" class="btn-timer" id="btn-timer-plus" name="btn-timer-plus">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                    </svg>
+                  </button>
+
+                  <button type="button" class="btn-timer" id="btn-timer-minus" name="btn-timer-minus">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-dash-circle" viewBox="0 0 16 16">
+                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                      <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/>
+                    </svg>
+                  </button>
+                </div>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
         
         <!-- Notification area -->
-        <div class="row mt-3">
-            <div id="snack-bar-home" class="alert text-center" role="alert"></div>
+        <div id="notification-div" class="notification-div">
+            <p id="snack-bar-home" class="text-center"></p>
         </div>
-      </div>
-    </div>
   </div>
 
   <!-- Modal de Loading -->
@@ -136,9 +141,9 @@
   </div>
   
   <!-- Footer -->
-  <div class="footer d-flex justify-content-between">
-    <div id="footer-title-developer" class="title">Desenvolvido por Rafael Arcanjo</div>
-    <div id="footer-title-version" class="title">v1.0.3</div>
+  <div class="footer d-block">
+    <div id="footer-title-developer">Por Rafael Arcanjo &copy</div>
+    <div id="footer-title-version">v1.0.4</div>
   </div>
 
   <!-- Front -->
