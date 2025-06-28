@@ -12,14 +12,15 @@ document.addEventListener('DOMContentLoaded', () => {
     timerPrincipal.value = timer;
   });
 
-  getFinesseStatusFront().then(response => {
-    if (response) {
-      showDiv(contentDiv);
-      hideDiv(loadingModal);
-      hideDiv(loginDiv);  
-      agentStatus(response);
+  
+  showDiv(loadingModal);
 
-    } else {
+  getFinesseStatusFront().then(response => {
+    console.log(response);
+
+    if (response == null) {
+
+      hideDiv(loadingModal);
       showDiv(loginDiv);
       hideDiv(contentDiv);
 
@@ -55,6 +56,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
               } else if (response.success) {
                 window.location.reload();              
+              } else if (response.success == false) {
+                throw new Error("Verifique a VPN, Cisco, Finesse e Credenciais");          
               } else { 
                 throw new Error("Login Inválido");
               }
@@ -74,6 +77,13 @@ document.addEventListener('DOMContentLoaded', () => {
           sendSnackbarNotification("Preencha todos os campos",'snack-bar');
         }
       });
+    } else {
+
+      showDiv(contentDiv);
+      hideDiv(loadingModal);
+      hideDiv(loginDiv);  
+      agentStatus(response);
+
     }
   });
 }); 
@@ -156,7 +166,13 @@ function agentStatus(finesse) {
   var agentNameDiv = document.getElementById('agent-name-div');
   var reasonDiv = document.getElementById('reason-div');
 
-  if (finesse) {
+  if (finesse == false) {    
+    console.log("Chegou?"); 
+    showCircleStatus("NOT READY");
+    agentNameDiv.innerText = "Desconectado";
+    reasonDiv.innerText = "Verifique a VPN";
+    
+  } else if (finesse){      
     showCircleStatus(finesse.state['text']);
     agentNameDiv.innerText = finesse.firstName['text'] + " " + finesse.lastName['text'];
 
@@ -171,8 +187,7 @@ function agentStatus(finesse) {
     } else {
       reasonDiv.innerText = "Finesse Fechado";
     }
-  }
-  else{
+  } else {
     sendSnackbarNotification("Falha ao carregar objeto do finesse","snack-bar");
   }
 }
@@ -185,7 +200,7 @@ function showCircleStatus(agentStatus){
     greenCircle.classList.remove('d-none');
     redCircle.classList.add('d-none');
 
-  }else{
+  } else {
     greenCircle.classList.add('d-none');
     redCircle.classList.remove('d-none');
   }

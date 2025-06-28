@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Extensão de Alarme",
-  "version": "1.0",
+  "name": "Finesse Notifier",
+  "version": "1.0.5",
   "description": "Extensão de alerta de telefonia finesse para agentes Totvs",
   "permissions": [
     "activeTab",
@@ -34,7 +34,7 @@
         "https://sncfinesse2.totvs.com.br/*"
       ],
       "js": [
-        "popup.js"
+		"popup.js"
       ]
     }
   ],

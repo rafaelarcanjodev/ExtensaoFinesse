@@ -15,9 +15,12 @@ async function resolverTimer(){
 
 async function startAlarm() {
     var notificationTimer = await resolverTimer();
-    log("### Timer final: " + notificationTimer);
-    
-    chrome.alarms.create("checkAgentStatus", { periodInMinutes: notificationTimer });
+    if(notificationTimer){
+        log("### Timer final: " + notificationTimer);
+        chrome.alarms.create("checkAgentStatus", { periodInMinutes: notificationTimer });
+    } else{
+        saveNotificationTimer(300000);
+    }
 }
 
 
@@ -258,7 +261,7 @@ async function connectApiFinesse(username, password, agentId) {
 
     const controller = new AbortController();
     const signal = controller.signal;
-    const timeout = 10000; // 10 segundos
+    const timeout = 2000; // 2 segundos
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     const options = {
