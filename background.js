@@ -2,24 +2,13 @@ const urls = ["https://sncfinesse1.totvs.com.br:8445/*","https://sncfinesse2.tot
 
 startAlarm();
 
-async function resolverTimer(){
-    var notificationTimer = await getNotificationTimer();
-    log("### Timer sem conversão: " + notificationTimer);
-
-    notificationTimer = parseInt(notificationTimer, 10);
-    notificationTimer = notificationTimer / 60000;    
-    log("### Timer atualizado: " + notificationTimer);
-    return notificationTimer;
-}
-
-
 async function startAlarm() {
-    var notificationTimer = await resolverTimer();
+    var notificationTimer = await getNotificationTimer();
     if(notificationTimer){
-        log("### Timer final: " + notificationTimer);
+        log("### Timer: " + notificationTimer);
         chrome.alarms.create("checkAgentStatus", { periodInMinutes: notificationTimer });
     } else{
-        saveNotificationTimer(300000);
+        saveNotificationTimer(5);
     }
 }
 
@@ -222,8 +211,10 @@ async function getNotificationTimer() {
                     log(chrome.runtime.lastError);  
                     reject(chrome.runtime.lastError); 
                     return;  
-                }   
-                resolve(item.timer);
+                }
+                
+                var timer = parseInt(item.timer, 10); 
+                resolve(timer);
             });  
         } else {  
             log('chrome.storage.local não está disponível.');  

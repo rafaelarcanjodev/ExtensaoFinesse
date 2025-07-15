@@ -7,8 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const loadingModal = document.getElementById('loading-modal');
 
   getTimerBackend().then(timer => {
-    timer = parseInt(timer, 10);
-    timer = timer / 60000;
     timerPrincipal.value = timer;
   });
 
@@ -66,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
               log("entrou no catch");
               log(error);
               hideDiv(loadingModal);
-              sendSnackbarNotification(error.message,'snack-bar');
+              sendSnackbarNotification(error.message);
               loginFormDataRecover(username,password,agentId);
               return false;
             } 
@@ -74,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } else {
           hideDiv(loadingModal);
-          sendSnackbarNotification("Preencha todos os campos",'snack-bar');
+          sendSnackbarNotification("Preencha todos os campos");
         }
       });
     } else {
@@ -89,35 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
 }); 
 
 
-var formTimer = document.getElementById('timer-form');
 var snackBar = document.getElementById('snack-bar-home');
-
-formTimer.addEventListener('change', (event) => {
-  event.preventDefault();
-
-  var timer = document.getElementById('timerPrincipal').value;
-  timer = parseInt(timer, 10);
-  timer = timer * 60000;
-
-
-  if (timer) {
-    chrome.runtime.sendMessage({
-      action: 'saveTimer',
-      data: {
-        timer: timer
-      }
-    }, function (timer) { 
-        if (timer && timer.success) {
-            sendSnackbarNotification("Timer salvo com sucesso!", 'snack-bar-home');
-        } else {
-            sendSnackbarNotification("Falha ao salvar o timer", 'snack-bar-home');
-        }
-    });
-  } else {
-    sendSnackbarNotification("Preencha todos os campos",'snack-bar-home');
-  }
-});
-
 
 // Função Assincrona que busca o timer no Backend
 async function getTimerBackend() {
@@ -192,6 +162,7 @@ function agentStatus(finesse) {
   }
 }
 
+
 function showCircleStatus(agentStatus){
   const greenCircle = document.getElementById('green-circle-div');
   const redCircle = document.getElementById('red-circle-div');
@@ -206,29 +177,6 @@ function showCircleStatus(agentStatus){
   }
 }
 
-const buttonLoggout = document.getElementById("button-logout");
-buttonLoggout.addEventListener("click", function(event) {
-    event.preventDefault();
-
-      try{
-      const loginDiv = document.getElementById('login-div');
-      const contentDiv = document.getElementById('content-div');
-      const menuDiv = document.getElementById('menu-content');
-
-      removeUserCredential();
-      menuDiv.classList.toggle('d-none');
-      showDiv(loginDiv);
-      hideDiv(contentDiv);
-      return true;
-
-      }catch(error){
-        log(error);
-        alert("Erro ao sair da Aplicação");
-      }
-    }
-)
-
-
 //Valor limpo pra poder, usar o clear timeout, limpar o "cache" e colocar uma mensagem em cima da outra se for necessário.
 var notificationTimeout;
 
@@ -241,21 +189,6 @@ function sendSnackbarNotification(message = 'Error', elementId = 'snack-bar', ti
     errorMessage.textContent = '';
   }, time);
 }
-
-
-const buttonNotificateWindows = document.getElementById("button-notification");
-buttonNotificateWindows.addEventListener("click", function(event) {
-    event.preventDefault();
-
-      try{
-        log("tentou");
-        sendWindowsNotification("teste");
-      }catch(error){
-        log(error);
-        alert("Erro ao notificar, verifique as permissões de notificação da extensão, ou entre em contato com nosso suporte");
-      }
-    }
-)
 
 
 function notification(message, timer) {

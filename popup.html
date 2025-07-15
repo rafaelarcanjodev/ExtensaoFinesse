@@ -33,7 +33,7 @@
     <div id="header-menu" class="header-menu">
       <section>
         <nav class="navbar navbar-dark">
-            <button data-mdb-button-init class="navbar-toggler menu-button border-0 p-0" type="button" data-mdb-collapse-init
+            <button data-mdb-btn-init class="navbar-toggler menu-button border-0 p-0" type="button" data-mdb-collapse-init
               data-mdb-target="#navbarToggleExternalContent10"
               aria-controls="navbarToggleExternalContent10" aria-expanded="false"
               aria-label="Toggle navigation">
@@ -44,10 +44,19 @@
     </div>
 
     <div id="menu-content" class="menu-content d-none">
-        <button id="button-notification" type="button" class="btn btn-light btn-menu w-100 menu-item" title="Testar Notificação">
-            Teste Notificar
+        <button id="btn-menu-notification" type="button" class="btn btn-light btn-menu w-100 menu-item" title="Testar Notificação">
+            Testar Notificação
         </button>
-        <button id="button-logout" type="button" class="btn btn-light btn-menu w-100 menu-item" title="Sair">
+        <button id="btn-menu-documentation" type="button" class="btn btn-light btn-menu w-100 menu-item" title="Acessar Documentação">
+            Documentação
+        </button>
+        <button id="btn-menu-store" type="button" class="btn btn-light btn-menu w-100 menu-item" title="Acessar Store">
+            Link da Store
+        </button>        
+        <button id="btn-menu-form" type="button" class="btn btn-light btn-menu w-100 menu-item" title="Acessar Formulário de Contato">
+            Sugestão de Melhoria
+        </button>
+        <button id="btn-menu-logout" type="button" class="btn btn-light btn-menu w-100 menu-item" title="Sair">
             Logout
         </button>
     </div>
@@ -74,7 +83,7 @@
       </div>
 
       <div>
-        <button type="submit" class="btn btn-primary w-100" id="button-form" name="button-form">Entrar</button>
+        <button type="submit" class="btn btn-primary w-100" id="btn-form" name="btn-form">Entrar</button>
       </div>
              
       <div class="notification-div">
@@ -105,7 +114,7 @@
                 <label for="timerPrincipal" class="form-label">Tempo de ausência</label>
 
                 <div class="d-flex"> 
-                  <input type="number" class="form-control rounded w-25" id="timerPrincipal" min="1" max="120" title="Define após quanto tempo de ausência o alerta irá notificar." maxlength="3" required />
+                  <input type="text" class="form-control rounded w-25" id="timerPrincipal" maxlengt="3" title="Define após quanto tempo de ausência o alerta irá notificar." maxlength="3" required />
 
                   <button type="button" class="btn-timer" id="btn-timer-plus" name="btn-timer-plus">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
@@ -143,7 +152,7 @@
   <!-- Footer -->
   <div class="footer d-block">
     <div id="footer-title-developer">Por Rafael Arcanjo &copy</div>
-    <div id="footer-title-version">v1.0.5</div>
+    <div id="footer-title-version">v1.0.6</div>
   </div>
 
   <!-- Front -->
@@ -155,8 +164,8 @@
   <!-- Bootstrap JS -->
   <script src="css/bootstrap.bundle.min.js"></script>
 
-  <!-- Toggler -->
-  <script src="toggler.js"></script>
+  <!-- Buttons -->
+  <script src="button.js"></script>
 
 </body>
 
