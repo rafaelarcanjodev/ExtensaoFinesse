@@ -111,24 +111,46 @@
         <!-- Timer form -->
         <div id="timer-div" class="timer-div mb-2 p-3 border border-3 border-light-subtle rounded">
           <form id="timer-form">       
-                <label for="timerPrincipal" class="form-label">Tempo de ausência</label>
+                <div>
+                  <label for="standartTimer" class="form-label" title="Definir tempo para ser notificado nas FALHAS de conexão">Timer principal</label>
+                  <div class="d-flex"> 
+                    <input type="text" class="form-control rounded w-25 no-letters" id="standartTimer" title="Definir tempo para ser notificado nas FALHAS de conexão" maxlength="3" required />
 
-                <div class="d-flex"> 
-                  <input type="text" class="form-control rounded w-25" id="timerPrincipal" maxlengt="3" title="Define após quanto tempo de ausência o alerta irá notificar." maxlength="3" required />
+                    <button type="button" class="btn-timer" id="btn-standart-timer-plus" name="btn-standart-timer-plus">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                      </svg>
+                    </button>
 
-                  <button type="button" class="btn-timer" id="btn-timer-plus" name="btn-timer-plus">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
-                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
-                    </svg>
-                  </button>
+                    <button type="button" class="btn-timer" id="btn-standart-timer-minus" name="btn-standart-timer-minus">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-dash-circle" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div><br>
+  
+                <div>
+                  <label for="pauseTimer" class="form-label" title="Definir tempo para ser notificado das PAUSAS do finesse">Timer de pausa</label>
+                  <div class="d-flex"> 
+                    <input type="text" class="form-control rounded w-25 no-letters" id="pauseTimer" title="Definir tempo para ser notificado das PAUSAS do finesse" maxlength="3" required />
 
-                  <button type="button" class="btn-timer" id="btn-timer-minus" name="btn-timer-minus">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-dash-circle" viewBox="0 0 16 16">
-                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                      <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/>
-                    </svg>
-                  </button>
+                    <button type="button" class="btn-timer" id="btn-pause-timer-plus" name="btn-pause-timer-plus">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                      </svg>
+                    </button>
+
+                    <button type="button" class="btn-timer" id="btn-pause-timer-minus" name="btn-pause-timer-minus">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-dash-circle" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
             </div>
           </form>
@@ -152,7 +174,7 @@
   <!-- Footer -->
   <div class="footer d-block">
     <div id="footer-title-developer">Por Rafael Arcanjo &copy</div>
-    <div id="footer-title-version">v1.0.6</div>
+    <div id="footer-title-version">v1.0.7</div>
   </div>
 
   <!-- Front -->

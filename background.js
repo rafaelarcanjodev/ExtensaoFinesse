@@ -1,14 +1,18 @@
 const urls = ["https://sncfinesse1.totvs.com.br:8445/*","https://sncfinesse2.totvs.com.br:8445/*"];
 
-startAlarm();
+startAlarm("checkAgentStatus");
 
-async function startAlarm() {
-    var notificationTimer = await getNotificationTimer();
-    if(notificationTimer){
-        log("### Timer: " + notificationTimer);
-        chrome.alarms.create("checkAgentStatus", { periodInMinutes: notificationTimer });
+async function startAlarm(nameAlarm) {
+    var standartTimer = await getTimer("standartTimer");
+    
+    var nameAlarm = nameAlarm || "checkAgentStatus";
+
+    if(standartTimer){
+        log("### Alarme " + nameAlarm  + " iniciado com sucesso. Timer: " + standartTimer);
+        chrome.alarms.create(nameAlarm, { periodInMinutes: standartTimer });
     } else{
-        saveNotificationTimer(5);
+        saveStandartTimer(5);
+        savePauseTimer(30);
     }
 }
 
@@ -27,9 +31,9 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 function stopAlarm(nameAlarm) {
     chrome.alarms.clear(nameAlarm, (wasCleared) => {
         if (wasCleared) {
-            console.log("Alarme " + nameAlarm + " parado com sucesso.");
+            log("Alarme " + nameAlarm + " parado com sucesso.");
         } else {
-            console.log("Não foi possível parar o alarme " + nameAlarm + ".");
+            log("Não foi possível parar o alarme " + nameAlarm + ".");
         }
     });
 }
@@ -49,15 +53,29 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     }    
     
     if (message.action === 'saveTimer') {
-        const { timer } = message.data;
-        saveNotificationTimer(timer)
-            .then((result) => { 
-                stopAlarm("checkAgentStatus");
-                startAlarm("checkAgentStatus");
-                sendResponse({ success: result }); 
-            })
-            .catch((error) => { sendResponse({ success: false, error: error.message }); 
-        });
+        const { timer, type } = message.data;
+
+        if (type == "standartTimer"){
+            saveStandartTimer(timer)
+                .then((result) => { 
+                    stopAlarm("checkAgentStatus");
+                    startAlarm("checkAgentStatus");
+                    sendResponse({ success: result }); 
+                })
+                .catch((error) => { sendResponse({ success: false, error: error.message }); 
+            });
+            
+        } else if (type == "pauseTimer"){
+            savePauseTimer(timer)
+                .then((result) => { 
+                    stopAlarm("checkAgentStatus");
+                    startAlarm("checkAgentStatus");
+                    sendResponse({ success: result }); 
+                })
+                .catch((error) => { sendResponse({ success: false, error: error.message }); 
+            });
+        }
+        
         return true;
     }    
 
@@ -93,29 +111,36 @@ function checkAgentStatus() {
 
         log("### Iniciando Verificação do Status do Agente");
         var reasonCodeId = finesse.reasonCodeId ? finesse.reasonCodeId['text'] : null;
+        reasonCodeId = parseInt(reasonCodeId);
         var finesseState = finesse.state ? finesse.state['text'] : null;
+        var standartTimer = await getTimer("standartTimer");
+        var pauseTimer = await getTimer("pauseTimer");
+        var countTimer = (pauseTimer - standartTimer) * 60000;
 
-        if (reasonCodeId === "-1") {
+        if (reasonCodeId == -1) {
 
             log("### Primeira Condição " + reasonCodeId + " - " + finesseState);
             notification("playAudioNotReady");
             tabActiveFocus();
             
-        } else if (reasonCodeId > "0" && reasonCodeId < "23") {               
-            
-            var notificationTimer = await resolverTimer();
+        } else if (reasonCodeId > 0 && reasonCodeId < 23) {               
+            stopAlarm("checkAgentStatus");
+            log("### Iniciando Contador de Pausa: " + countTimer);
 
-            log("### Segunda Condição " + reasonCodeId + " - " + finesseState);
-            notification("playAudioIntervalTimeExceed", notificationTimer);
-            tabActiveFocus();
+            setTimeout(function(){
+                log("### Segunda Condição " + reasonCodeId + " - " + finesseState);
+                notification("playAudioIntervalTimeExceed", pauseTimer);
+                tabActiveFocus();
+                startAlarm("checkAgentStatus");
+            }, countTimer);            
 
-        } else if (["28", "23"].includes(reasonCodeId)) {      
+        } else if ([28, 23].includes(reasonCodeId)) {      
 
             log("### Terceira Condição " + reasonCodeId + " - " + finesseState);
             notification("playAudioDeviceError");
             tabActiveFocus();
             
-        } else if (finesseState === 'NOT_READY') {   
+        } else if (finesseState == "NOT_READY") {   
 
             log("### Quarta Condição " + reasonCodeId + " - " + finesseState);
             notification("playAudioNotReady");
@@ -186,14 +211,14 @@ function getUserCredential(callback) {
 }
 
 
-function saveNotificationTimer(timer) {
+function saveStandartTimer(standartTimer) {
     return new Promise((resolve, reject) => {
         try {
-            chrome.storage.local.set({ timer }, () => {
+            chrome.storage.local.set({ standartTimer }, () => {
                 if (chrome.runtime.lastError) {
                     return reject(chrome.runtime.lastError);
                 }
-                log("### Timer salvo de forma segura");
+                log("### Timer Padrão salvo de forma segura");
                 resolve(true);
             });
         } catch (e) {
@@ -203,18 +228,43 @@ function saveNotificationTimer(timer) {
 }
 
 
-async function getNotificationTimer() {  
+function savePauseTimer(pauseTimer) {
+    return new Promise((resolve, reject) => {
+        try {
+            chrome.storage.local.set({ pauseTimer }, () => {
+                if (chrome.runtime.lastError) {
+                    return reject(chrome.runtime.lastError);
+                }
+                log("### Timer de Pausa salvo de forma segura");
+                resolve(true);
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
+
+
+async function getTimer(type) {  
     return new Promise((resolve, reject) => {  
         if (chrome && chrome.storage && chrome.storage.local) {  
-            item = chrome.storage.local.get(['timer'], function (item) {  
+            item = chrome.storage.local.get(['standartTimer','pauseTimer'], function (item) {  
                 if (chrome.runtime.lastError) {  
                     log(chrome.runtime.lastError);  
                     reject(chrome.runtime.lastError); 
                     return;  
                 }
                 
-                var timer = parseInt(item.timer, 10); 
-                resolve(timer);
+                var standartTimer = parseInt(item.standartTimer, 10); 
+                var pauseTimer = parseInt(item.pauseTimer, 10); 
+                
+                if (type == "standartTimer"){
+                    resolve (standartTimer);
+                }
+
+                if (type == "pauseTimer"){
+                    resolve (pauseTimer);
+                }
             });  
         } else {  
             log('chrome.storage.local não está disponível.');  
@@ -265,7 +315,7 @@ async function connectApiFinesse(username, password, agentId) {
 
     try {
         const response = await fetch(url, options);
-        console.log(response);
+        log(response);
 
         clearTimeout(timeoutId);
         if (!response.ok) {
@@ -299,8 +349,7 @@ function notification(message, time) {
 }
 
 
-function sendWindowsNotification(message) {
-    
+function sendWindowsNotification(message) {    
     clearAllNotifications();
     chrome.notifications.create({
         type: "basic",

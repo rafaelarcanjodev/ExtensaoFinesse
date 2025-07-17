@@ -42,45 +42,81 @@ document.querySelector('#btn-menu-logout').addEventListener("click", function(ev
     event.preventDefault();
 
       try{
-      const loginDiv = document.getElementById('login-div');
-      const contentDiv = document.getElementById('content-div');
-      const menuDiv = document.getElementById('menu-content');
+        const loginDiv = document.getElementById('login-div');
+        const contentDiv = document.getElementById('content-div');
+        const menuDiv = document.getElementById('menu-content');
 
-      removeUserCredential();
-      menuDiv.classList.toggle('d-none');
-      showDiv(loginDiv);
-      hideDiv(contentDiv);
-      return true;
+        removeUserCredential();
+        menuDiv.classList.toggle('d-none');
+        showDiv(loginDiv);
+        hideDiv(contentDiv);
+        return true;
 
       }catch(error){
         log(error);
-        alert("Erro ao sair da Aplicação");
+        sendSnackbarNotification("Erro ao sair da Aplicação","snack-bar-home");
       }
     }
 )
 
 
-document.querySelector('#btn-timer-plus').addEventListener('click', function(event){
+document.querySelector('#btn-standart-timer-plus').addEventListener('click', function(event){
     event.preventDefault();
-    updateTimer(1);
+    updateTimer(1, "standartTimer");
 })
 
 
-document.querySelector('#btn-timer-minus').addEventListener('click', function(event){
+document.querySelector('#btn-standart-timer-minus').addEventListener('click', function(event){
     event.preventDefault();
-    updateTimer(-1);
+    updateTimer(-1, "standartTimer");
 })
+
+
+document.querySelector('#btn-pause-timer-plus').addEventListener('click', function(event){
+    event.preventDefault();
+    updateTimer(1, "pauseTimer");
+})
+
+
+document.querySelector('#btn-pause-timer-minus').addEventListener('click', function(event){
+    event.preventDefault();
+    updateTimer(-1, "pauseTimer");
+})
+
+
+document.querySelectorAll('.no-letters').forEach(input => {
+    input.addEventListener('input', function() {
+        this.value = this.value.replace(/[a-zA-Z]/g, '');
+    });
+});
+
 
 document.querySelector("#timer-form").addEventListener('change', async (event) => {
   event.preventDefault();
 
-    var timerValue = getFormTimer("value");
-
-    if (timerValue){
+    var changedInputId = event.target.id;
+    var standartTimer = getFormTimer("value", "standartTimer");
+    var pauseTimer = getFormTimer("value", "pauseTimer");
+    var timerElement = getFormTimer("element", !changedInputId);
+    
+    var timerValue = 
+        changedInputId == "standartTimer" ? standartTimer : 
+        changedInputId == "pauseTimer" ? pauseTimer : 
+        timerValue == null;
+    
+    if (isNaN(timerValue)){        
+        sendSnackbarNotification("Número Inválido","snack-bar-home");
+        getTimerBackend(changedInputId).then(response => {timerElement.value = response});
+    }
+    else if (standartTimer == false || pauseTimer == false) {
+        getTimerBackend(changedInputId).then(response => {timerElement.value = response});    
+    }
+    else {
         chrome.runtime.sendMessage({
             action: 'saveTimer',
             data: {
-                timer: timerValue
+                timer: timerValue,
+                type: changedInputId
             }
     }, function (response) { 
         if (response && response.success) {
@@ -93,32 +129,55 @@ document.querySelector("#timer-form").addEventListener('change', async (event) =
 });
 
 
-function updateTimer(increment){
-    var timerValue = getFormTimer("value");
-    var timerElement = getFormTimer("element");
+function updateTimer(increment, type){
+    var timerValue = getFormTimer("value", type);
+    var timerElement = getFormTimer("element", type);    
     var newTimer = timerValue + increment;
     
     if(newTimer < 1 || newTimer > 120 || timerValue == false){    
-        sendSnackbarNotification("Número Inválido","snack-bar-home");
-    }
+        sendSnackbarNotification("Escolha um tempo entre 1 e 120 (minutos)","snack-bar-home");
+    } 
+
     else{  
         timerElement.value = timerValue + increment;
         timerElement.dispatchEvent(new Event('change', { bubbles: true }));
-    }    
+    }
 }
 
 
-function getFormTimer(type){    
-    var timerElement = document.getElementById("timerPrincipal");
-    var timerValue = parseInt(timerElement.value, 10);
+function getFormTimer(resultType, timerType){    
 
-    if(timerValue <= 0 || timerValue >= 121){ 
+    var timerElement = document.getElementById(timerType);
+    var standartTimer = parseInt(document.getElementById("standartTimer").value, 10);
+    var pauseTimer = parseInt(document.getElementById("pauseTimer").value, 10); 
+
+
+    console.log("get Form " + standartTimer + " " + pauseTimer); 
+
+    var timerValue = 
+        timerType == "standartTimer" ? standartTimer : 
+        timerType == "pauseTimer" ? pauseTimer : 
+        timerValue == null; 
+
+    if(timerValue == isNaN){ 
         sendSnackbarNotification("Número Inválido","snack-bar-home");
-        getTimerBackend().then(response => {timerElement.value = response})
+        getTimerBackend(timerType).then(response => {timerElement.value = response});
     }
+
+    else if(timerValue <= 0 || timerValue >= 120){ 
+        sendSnackbarNotification("Escolha um número entre 1 e 120 (minutos)","snack-bar-home");
+        getTimerBackend(timerType).then(response => {timerElement.value = response});
+    }
+
+    else if(pauseTimer <= standartTimer){
+        sendSnackbarNotification("Tempo de Pausa não pode ser menor que Tempo Padrão","snack-bar-home");
+        getTimerBackend(timerType).then(response => {timerElement.value = response});
+        return false;
+    }
+
     else{
-        return (type == "value") ? timerValue : 
-               (type == "element") ? timerElement : 
+        return (resultType == "value") ? timerValue : 
+               (resultType == "element") ? timerElement : 
                false;
     }
 }

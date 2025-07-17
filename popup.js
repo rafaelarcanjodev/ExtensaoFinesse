@@ -2,20 +2,22 @@
 document.addEventListener('DOMContentLoaded', () => {
   const formLogin = document.getElementById('login-form');
   const loginDiv = document.getElementById('login-div');
-  const timerPrincipal = document.getElementById('timerPrincipal');
+  const standartTimer = document.getElementById('standartTimer');
+  const pauseTimer = document.getElementById('pauseTimer');
   const contentDiv = document.getElementById('content-div');
   const loadingModal = document.getElementById('loading-modal');
 
-  getTimerBackend().then(timer => {
-    timerPrincipal.value = timer;
+  getTimerBackend("standartTimer").then(result => {
+    standartTimer.value = result;
   });
 
+  getTimerBackend("pauseTimer").then(result => {
+    pauseTimer.value = result;
+  });
   
   showDiv(loadingModal);
 
   getFinesseStatusFront().then(response => {
-    console.log(response);
-
     if (response == null) {
 
       hideDiv(loadingModal);
@@ -90,8 +92,8 @@ document.addEventListener('DOMContentLoaded', () => {
 var snackBar = document.getElementById('snack-bar-home');
 
 // Função Assincrona que busca o timer no Backend
-async function getTimerBackend() {
-  return await getNotificationTimer();
+async function getTimerBackend(type) {
+  return await getTimer(type);
 }
 
 
@@ -136,8 +138,7 @@ function agentStatus(finesse) {
   var agentNameDiv = document.getElementById('agent-name-div');
   var reasonDiv = document.getElementById('reason-div');
 
-  if (finesse == false) {    
-    console.log("Chegou?"); 
+  if (finesse == false) {
     showCircleStatus("NOT READY");
     agentNameDiv.innerText = "Desconectado";
     reasonDiv.innerText = "Verifique a VPN";
