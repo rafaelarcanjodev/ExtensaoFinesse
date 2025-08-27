@@ -2,7 +2,9 @@
 
 A **Finesse Notifier** é uma extensão para o **Google Chrome** que monitora o status do **Cisco Finesse** em tempo real e notifica o agente sobre mudanças de status ou inatividade. O objetivo é **otimizar a produtividade** e garantir que o agente esteja sempre ciente da sua situação no sistema, evitando períodos prolongados de inatividade.
 
+
 ---
+
 
 ## Funcionalidades
 - Monitoramento contínuo do status do agente no Cisco Finesse.
@@ -12,7 +14,9 @@ A **Finesse Notifier** é uma extensão para o **Google Chrome** que monitora o 
 - Interface moderna, responsiva e fácil de usar.
 - Integração com APIs do Chrome para execução em segundo plano.
 
+
 ---
+
 
 ## Tecnologias Utilizadas
 
@@ -26,7 +30,9 @@ A **Finesse Notifier** é uma extensão para o **Google Chrome** que monitora o 
   - `chrome.notifications` → envio de alertas visuais/sonoros.
   - `chrome.runtime.onInstalled` → configuração inicial após instalação/atualização.
 
+
 ---
+
 
 ## Instalação e Teste Local
 
@@ -49,7 +55,9 @@ Para rodar a extensão localmente no Chrome:
 
 7. Você poderá realizar o **Teste de Notificação** do menu, mas para ter uma experiência completa, é necessário acessar como agente de telefonia no **https://sncfinesse1.totvs.com.br:8445/** ou **https://sncfinesse2.totvs.com.br:8445/**
 
+
 ---
+
 
 ## Instalação via Chrome Web Store
 
@@ -59,7 +67,9 @@ Para instalar diretamente a partir da Chrome Web Store, basta acessar o link aba
 
 Sempre que o finesse for iniciado, a extensão detecta automaticamente.
 
+
 ---
+
 
 ## Documentação Interna
 
@@ -67,41 +77,48 @@ Foi desenvolvida a documentação interna da **TOTVS Developer Network (TDN)** p
 
 🔗 [TOTVS Developer Network - Cisco Finesse API](https://tdn.totvs.com/pages/viewpage.action?pageId=961629221)
 
+
 ---
+
 
 ## Equipe de Desenvolvimento
 
-**Desenvolvimento**
+**Desenvolvimento**  
 Rafael Arcanjo - rafael.arcanjo@totvs.com.br
 
-**Apoio técnico**
+**Apoio técnico**  
 Abner de Assis Athayde - abner.athayde@fluig.com
 
-**Mockups Design Final**
+**Mockups Design Final**  
 Thiago Orsi - thiago.orsi@totvs.com.br
 
-**Coordenador da Área**
+**Coordenador da Área**  
 Rafael Maciel Vanat - rafael.vanat@fluig.com
 
-**Gestor da Área**
+**Gestor da Área**  
 Gilberto de Aguiar - gilberto.aguiar@fluig.com
 
 
 ---
 
-## 📌 Roadmap Futuro
+
+## Roadmap Futuro
 - [ ] Implementar diferentes timers para cada evento.
 - [ ] Notificações para Mobile.
 - [ ] Integração com Google Calendar
 - [ ] Mudança automática de status ao clicar no popup de alerta
 
+
 ---
 
-## 📄 Licença
+
+## Licença
 Este projeto é de propriedade da **TOTVS**.  
 O uso, modificação e distribuição estão sujeitos às políticas internas e diretrizes da empresa.  
 Não é permitido uso comercial ou redistribuição sem autorização prévia da TOTVS.
 
+
 ---
+
 
 👨‍💻 Desenvolvido por [Rafael Arcanjo](https://github.com/rafarcanjoatos)
