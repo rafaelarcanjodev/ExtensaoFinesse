@@ -45,16 +45,16 @@ async function startInterval(nameAlarm) {
     standartTimer = await getTimer("standartTimer");
   }
 
-  log("### Alarme [" + nameAlarm + "] iniciado com sucesso. Timer: " + standartTimer);
+  log("### Intervalo de verificação [" + nameAlarm + "] iniciado com sucesso. Timer: " + standartTimer);
   chrome.alarms.create(nameAlarm, { periodInMinutes: standartTimer });
 }
 
 function stopinterval(nameAlarm) {
   chrome.alarms.clear(nameAlarm, (wasCleared) => {
     if (wasCleared) {
-      log("Alarme [" + nameAlarm + "] parado com sucesso.");
+      log("Intervalo de verificação [" + nameAlarm + "] parado com sucesso.");
     } else {
-      log("Não foi possível parar o alarme [" + nameAlarm + "].");
+      log("Não foi possível parar o intervalo de verificação [" + nameAlarm + "].");
     }
   });
 }
@@ -285,7 +285,6 @@ async function connectApiFinesse(username, password, agentId) {
     if (!response.ok) {
       log("### Erro na função connectApiFinesse com a API finnesse " + response.status);
 
-      
       throw new Error(`### HTTP error! status: ${response.status}`);
     }
 
@@ -326,6 +325,8 @@ function sendWindowsNotification(message) {
     function (notificationId) {
       if (chrome.runtime.lastError) {
         log("Erro ao criar notificação:", chrome.runtime.lastError);
+      } else {
+        log("Notificação enviada com sucesso.");
       }
     }
   );
@@ -346,6 +347,17 @@ function tabActiveFocus() {
     }
   });
 }
+
+chrome.notifications.onClicked.addListener(function (notificationId) {
+  chrome.tabs.query({ url: urls }, function (tabs) {
+    if (tabs.length > 0) {
+      const targetTab = tabs[0];
+
+      chrome.windows.update(targetTab.windowId, { focused: true });
+      chrome.tabs.update(targetTab.id, { active: true });
+    }
+  });
+});
 
 // =========================================================
 //  Conversão de xml para json
