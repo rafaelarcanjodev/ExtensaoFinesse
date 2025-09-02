@@ -1,41 +1,23 @@
 {
   "manifest_version": 3,
   "name": "Finesse Notifier",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "description": "Extensão de alerta de telefonia finesse para agentes Totvs",
-  "permissions": [
-    "activeTab",
-    "tabs",
-    "storage",
-    "notifications",
-    "alarms"
-  ],
+  "permissions": ["activeTab", "tabs", "storage", "notifications", "alarms", "scripting"],
   "web_accessible_resources": [
     {
-      "resources": [
-        "audio/alarm.mp3"
-      ],
-      "matches": [
-        "<all_urls>"
-      ]
+      "resources": ["audio/alarm.mp3"],
+      "matches": ["<all_urls>"]
     }
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "js/background.js"
   },
   "content_scripts": [
     {
-      "resources": [
-        "fontawesome/css/all.min.css",
-        "fontawesome/webfonts/*"
-      ],
-      "matches": [
-        "https://sncfinesse1.totvs.com.br/*",
-        "https://sncfinesse2.totvs.com.br/*"
-      ],
-      "js": [
-		"popup.js"
-      ]
+      "resources": ["fontawesome/css/all.min.css", "fontawesome/webfonts/*"],
+      "matches": ["https://sncfinesse1.totvs.com.br/*", "https://sncfinesse2.totvs.com.br/*"],
+      "js": ["js/popup.js", "js/button.js"]
     }
   ],
   "action": {

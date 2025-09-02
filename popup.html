@@ -1,194 +1,304 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXN0TP9KLS"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Extensão Finesse</title>
+      gtag("config", "G-XXN0TP9KLS");
+    </script>
 
-  <!-- Bootstrap CSS -->
-  <link href="css/bootstrap.min.css" rel="stylesheet">
-  <link href="css/style.css" rel="stylesheet">
-</head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Extensão Finesse</title>
 
-<body>
-  
-  <!-- Header -->
-  <div class="header d-flex justify-content-between">
+    <!-- Bootstrap CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/style.css" rel="stylesheet" />
+  </head>
 
-    <!-- Status Circle -->
-    <div id="header-status-div" class="icon">
-      <div id="green-circle-div" name="green-circle-div" class="d-none">
-        <svg xmlns="http://www.w3.org/2000/svg" height="12" width="12" viewBox="0 0 512 512"><path fill="#63E6BE" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" /></svg>
+  <body>
+    <!-- Header -->
+    <div class="header d-flex justify-content-between">
+      <!-- Status Circle -->
+      <div id="header-status-div" class="icon">
+        <div id="green-circle-div" name="green-circle-div" class="d-none">
+          <svg xmlns="http://www.w3.org/2000/svg" height="12" width="12" viewBox="0 0 512 512">
+            <path fill="#63E6BE" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" />
+          </svg>
+        </div>
+        <div id="red-circle-div" name="red-circle-div" class="d-none">
+          <svg xmlns="http://www.w3.org/2000/svg" height="12" width="12" viewBox="0 0 512 512">
+            <path fill="#ff0000" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" />
+          </svg>
+        </div>
       </div>
-      <div id="red-circle-div" name="red-circle-div" class="d-none">
-        <svg xmlns="http://www.w3.org/2000/svg" height="12" width="12" viewBox="0 0 512 512"><path fill="#ff0000" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" /></svg>        
-      </div>
-    </div>
 
-    <!-- App title -->
-    <div id="header-title" class="header-title">Finesse Notifier</div>
+      <!-- App title -->
+      <div id="header-title" class="header-title">Finesse Notifier</div>
 
-    <!--Menu-->
-    <div id="header-menu" class="header-menu">
-      <section>
-        <nav class="navbar navbar-dark">
-            <button data-mdb-btn-init class="navbar-toggler menu-button border-0 p-0" type="button" data-mdb-collapse-init
+      <!--Menu-->
+      <div id="header-menu" class="header-menu">
+        <section>
+          <nav class="navbar navbar-dark">
+            <button
+              data-mdb-btn-init
+              class="navbar-toggler menu-button border-0 p-0"
+              type="button"
+              data-mdb-collapse-init
               data-mdb-target="#navbarToggleExternalContent10"
-              aria-controls="navbarToggleExternalContent10" aria-expanded="false"
-              aria-label="Toggle navigation">
+              aria-controls="navbarToggleExternalContent10"
+              aria-expanded="false"
+              aria-label="Toggle navigation"
+            >
               <div class="animated-icon"><span></span><span></span><span></span><span></span></div>
             </button>
-        </nav>
-      </section>
-    </div>
+          </nav>
+        </section>
+      </div>
 
-    <div id="menu-content" class="menu-content d-none">
-        <button id="btn-menu-notification" type="button" class="btn btn-light btn-menu w-100 menu-item" title="Testar Notificação">
-            Testar Notificação
+      <div id="menu-content" class="menu-content d-none">
+        <button
+          id="btn-menu-notification"
+          type="button"
+          class="btn btn-light btn-menu w-100 menu-item"
+          title="Testar Notificação"
+        >
+          Testar Notificação
         </button>
-        <button id="btn-menu-documentation" type="button" class="btn btn-light btn-menu w-100 menu-item" title="Acessar Documentação">
-            Documentação
+        <button
+          id="btn-menu-documentation"
+          type="button"
+          class="btn btn-light btn-menu w-100 menu-item"
+          title="Acessar Documentação"
+        >
+          Documentação
         </button>
         <button id="btn-menu-store" type="button" class="btn btn-light btn-menu w-100 menu-item" title="Acessar Store">
-            Link da Store
-        </button>        
-        <button id="btn-menu-form" type="button" class="btn btn-light btn-menu w-100 menu-item" title="Acessar Formulário de Contato">
-            Sugestão de Melhoria
+          Link da Store
+        </button>
+        <button
+          id="btn-menu-form"
+          type="button"
+          class="btn btn-light btn-menu w-100 menu-item"
+          title="Acessar Formulário de Contato"
+        >
+          Sugestão de Melhoria
         </button>
         <button id="btn-menu-logout" type="button" class="btn btn-light btn-menu w-100 menu-item" title="Sair">
-            Logout
+          Logout
         </button>
+      </div>
     </div>
 
-  </div>
-
-  <!-- Form Login -->
-  <div id="login-div" class="container d-flex justify-content-center align-items-center">
-    <form id="login-form" class="row w-100">
-
-      <div class="mb-3">
-        <label for="username" class="form-label">Usuário:</label>
-        <input type="email" class="form-control" id="username" name="username" placeholder="nome.sobrenome@jv01.local" title="nome.sobrenome@jv01.local" required>
-      </div>
-      
-      <div class="mb-3">
-        <label for="agentId" class="form-label">Id de Agente:</label>
-        <input type="text" class="form-control" id="agentId" name="agentId" placeholder="99.999.999" title="cpf sem o primeiro e os últimos dois números" required>
-      </div>
-      
-      <div class="mb-4">
-        <label for="password" class="form-label">Senha:</label>
-        <input type="password" class="form-control" id="password" name="password" placeholder="123456" title="123456" required>
-      </div>
-
-      <div>
-        <button type="submit" class="btn btn-primary w-100" id="btn-form" name="btn-form">Entrar</button>
-      </div>
-             
-      <div class="notification-div">
-        <div id="snack-bar" class="alert" role="alert"></div>
-      </div>
-    
-    </form>
-  </div>
-
-  <!-- Home -->
-  <div id="content-div" class="container d-block justify-content-center align-items-center d-none">
-        <!-- Agent -->
-        <div class="agent-div mb-4 p-3 border border-3 border-secondary-subtle rounded">
-          <div class="d-block mb-3">
-            <span>Agente conectado</span>
-            <span id="agent-name-div" class="fw-bold d-block"></span>
-          </div>
-
-          <div class="d-block">
-            <span>Status</span>
-            <span id="reason-div" class="fw-bold d-block"></span>
-          </div>
+    <!-- Form Login -->
+    <div id="login-div" class="container d-flex justify-content-center align-items-center">
+      <form id="login-form" class="row w-100">
+        <div class="mb-3">
+          <label for="username" class="form-label">Usuário:</label>
+          <input
+            type="email"
+            class="form-control"
+            id="username"
+            name="username"
+            placeholder="nome.sobrenome@jv01.local"
+            title="nome.sobrenome@jv01.local"
+            required
+          />
         </div>
-        
-        <!-- Timer form -->
-        <div id="timer-div" class="timer-div mb-2 p-3 border border-3 border-light-subtle rounded">
-          <form id="timer-form">       
-                <div>
-                  <label for="standartTimer" class="form-label" title="Definir tempo para ser notificado nas FALHAS de conexão">Timer principal</label>
-                  <div class="d-flex"> 
-                    <input type="text" class="form-control rounded w-25 no-letters" id="standartTimer" title="Definir tempo para ser notificado nas FALHAS de conexão" maxlength="3" required />
 
-                    <button type="button" class="btn-timer" id="btn-standart-timer-plus" name="btn-standart-timer-plus">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
-                      </svg>
-                    </button>
+        <div class="mb-3">
+          <label for="agentId" class="form-label">Id de Agente:</label>
+          <input
+            type="text"
+            class="form-control"
+            id="agentId"
+            name="agentId"
+            placeholder="99.999.999"
+            title="cpf sem o primeiro e os últimos dois números"
+            required
+          />
+        </div>
 
-                    <button type="button" class="btn-timer" id="btn-standart-timer-minus" name="btn-standart-timer-minus">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-dash-circle" viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/>
-                      </svg>
-                    </button>
-                  </div>
-                </div><br>
-  
-                <div>
-                  <label for="pauseTimer" class="form-label" title="Definir tempo para ser notificado das PAUSAS do finesse">Timer de pausa</label>
-                  <div class="d-flex"> 
-                    <input type="text" class="form-control rounded w-25 no-letters" id="pauseTimer" title="Definir tempo para ser notificado das PAUSAS do finesse" maxlength="3" required />
+        <div class="mb-4">
+          <label for="password" class="form-label">Senha:</label>
+          <input
+            type="password"
+            class="form-control"
+            id="password"
+            name="password"
+            placeholder="123456"
+            title="123456"
+            required
+          />
+        </div>
 
-                    <button type="button" class="btn-timer" id="btn-pause-timer-plus" name="btn-pause-timer-plus">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
-                      </svg>
-                    </button>
+        <div>
+          <button type="submit" class="btn btn-primary w-100" id="btn-form" name="btn-form">Entrar</button>
+        </div>
 
-                    <button type="button" class="btn-timer" id="btn-pause-timer-minus" name="btn-pause-timer-minus">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-dash-circle" viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
+        <div class="notification-div">
+          <div id="snack-bar" class="alert" role="alert"></div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Home -->
+    <div id="content-div" class="container d-block justify-content-center align-items-center d-none">
+      <!-- Agent -->
+      <div class="agent-div mb-4 p-3 border border-3 border-secondary-subtle rounded">
+        <div class="d-block mb-3">
+          <span>Agente conectado</span>
+          <span id="connection-status-div" class="fw-bold d-block"></span>
+        </div>
+
+        <div class="d-block">
+          <span>Status</span>
+          <span id="reason-description-div" class="fw-bold d-block"></span>
+        </div>
+      </div>
+
+      <!-- Timer form -->
+      <div id="timer-div" class="timer-div mb-2 p-3 border border-3 border-light-subtle rounded">
+        <form id="timer-form">
+          <div>
+            <label
+              for="standartTimer"
+              class="form-label"
+              title="Definir tempo para ser notificado nas FALHAS de conexão"
+              >Timer principal</label
+            >
+            <div class="d-flex">
+              <input
+                type="text"
+                class="form-control rounded w-25 no-letters"
+                id="standartTimer"
+                title="Definir tempo para ser notificado nas FALHAS de conexão"
+                maxlength="3"
+                required
+              />
+
+              <button type="button" class="btn-timer" id="btn-standart-timer-plus" name="btn-standart-timer-plus">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  fill="currentColor"
+                  class="bi bi-plus-circle"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                  <path
+                    d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"
+                  />
+                </svg>
+              </button>
+
+              <button type="button" class="btn-timer" id="btn-standart-timer-minus" name="btn-standart-timer-minus">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  fill="currentColor"
+                  class="bi bi-dash-circle"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                  <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
+                </svg>
+              </button>
             </div>
-          </form>
-        </div>
-        
-        <!-- Notification area -->
-        <div id="notification-div" class="notification-div">
-            <p id="snack-bar-home" class="text-center"></p>
-        </div>
-  </div>
+          </div>
+          <br />
 
-  <!-- Modal de Loading -->
-  <div id="loading-modal" class="d-none d-block position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(255, 255, 255, 0.5); z-index: 1050;">  
-    <div class="modal-body d-flex flex-column align-items-center justify-content-center">  
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Carregando...</span>
+          <div>
+            <label for="pauseTimer" class="form-label" title="Definir tempo para ser notificado das PAUSAS do finesse"
+              >Timer de pausa</label
+            >
+            <div class="d-flex">
+              <input
+                type="text"
+                class="form-control rounded w-25 no-letters"
+                id="pauseTimer"
+                title="Definir tempo para ser notificado das PAUSAS do finesse"
+                maxlength="3"
+                required
+              />
+
+              <button type="button" class="btn-timer" id="btn-pause-timer-plus" name="btn-pause-timer-plus">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  fill="currentColor"
+                  class="bi bi-plus-circle"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                  <path
+                    d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"
+                  />
+                </svg>
+              </button>
+
+              <button type="button" class="btn-timer" id="btn-pause-timer-minus" name="btn-pause-timer-minus">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  fill="currentColor"
+                  class="bi bi-dash-circle"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                  <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Notification area -->
+      <div id="notification-div" class="notification-div">
+        <p id="snack-bar-home" class="text-center"></p>
       </div>
     </div>
-  </div>
-  
-  <!-- Footer -->
-  <div class="footer d-block">
-    <div id="footer-title-developer">Por Rafael Arcanjo &copy</div>
-    <div id="footer-title-version">v1.0.7</div>
-  </div>
 
-  <!-- Front -->
-  <script src="popup.js"></script>
+    <!-- Modal de Loading -->
+    <div
+      id="loading-modal"
+      class="d-none d-block position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+      style="background: rgba(255, 255, 255, 0.5); z-index: 1050"
+    >
+      <div class="modal-body d-flex flex-column align-items-center justify-content-center">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Carregando...</span>
+        </div>
+      </div>
+    </div>
 
-  <!-- Backend -->
-  <script src="background.js"></script>
+    <!-- Footer -->
+    <div class="footer d-block">
+      <div id="footer-title-developer">Por Rafael Arcanjo &copy</div>
+      <div id="footer-title-version">v1.1.0</div>
+    </div>
 
-  <!-- Bootstrap JS -->
-  <script src="css/bootstrap.bundle.min.js"></script>
+    <!-- Front -->
+    <script src="js/popup.js"></script>
 
-  <!-- Buttons -->
-  <script src="button.js"></script>
+    <!-- Buttons -->
+    <script src="js/button.js"></script>
 
-</body>
+    <!-- Service Worker -->
+    <script src="js/background.js"></script>
 
+    <!-- Bootstrap JS -->
+    <script src="css/bootstrap.bundle.min.js"></script>
+  </body>
 </html>
