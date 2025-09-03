@@ -12,11 +12,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   showDiv(loadingModal);
 
-  getTimer("standart-timer").then((response) => {
+  getStorageTimer("standart-timer").then((response) => {
     standartTimer.value = response;
   });
 
-  getTimer("pause-timer").then((response) => {
+  getStorageTimer("pause-timer").then((response) => {
     pauseTimer.value = response;
   });
 
@@ -54,38 +54,7 @@ function startSubmitListener(formLogin, loadingModal) {
     agentId = validateLogin(agentId);
 
     if (username && password && agentId) {
-      chrome.runtime.sendMessage(
-        {
-          action: "setCredentials",
-          data: {
-            username: username,
-            password: password,
-            agentId: agentId,
-          },
-        },
-        async function (response) {
-          log("setCredentials - Response Front:");
-          log(response);
-
-          try {
-            if (!response) {
-              throw new Error("Sem resposta do Servidor");
-            } else if (response.success) {
-              window.location.reload();
-            } else if (response.success == false) {
-              throw new Error("Verifique a VPN, Cisco, Finesse e Credenciais");
-            } else {
-              throw new Error("Login Inválido");
-            }
-          } catch (error) {
-            log(error);
-            hideDiv(loadingModal);
-            sendSnackbarNotification(error.message);
-            loginFormDataRecover(username, password, agentId);
-            return false;
-          }
-        }
-      );
+      setCredentials(username, password, agentId, loadingModal);
     } else {
       hideDiv(loadingModal);
     }
@@ -106,6 +75,41 @@ function validateLogin(value) {
   }
 
   return trimmedValue;
+}
+
+function setCredentials(username, password, agentId, loadingModal) {
+  chrome.runtime.sendMessage(
+    {
+      action: "setCredentials",
+      data: {
+        username: username,
+        password: password,
+        agentId: agentId,
+      },
+    },
+    async function (response) {
+      log("setCredentials - Response Front:");
+      log(response);
+
+      try {
+        if (!response) {
+          throw new Error("Sem resposta do Servidor");
+        } else if (response.success) {
+          window.location.reload();
+        } else if (response.success == false) {
+          throw new Error("Verifique a VPN, Cisco, Finesse e Credenciais");
+        } else {
+          throw new Error("Login Inválido");
+        }
+      } catch (error) {
+        log(error);
+        hideDiv(loadingModal);
+        sendSnackbarNotification(error.message);
+        loginFormDataRecover(username, password, agentId);
+        return false;
+      }
+    }
+  );
 }
 
 function loginFormDataRecover(username, password, agentId) {

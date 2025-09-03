@@ -89,31 +89,20 @@ document.querySelectorAll(".no-letters").forEach((input) => {
 document.querySelector("#timer-form").addEventListener("change", async (event) => {
   event.preventDefault();
 
-  var changedInputId = event.target.id;
+  var timerType = event.target.id;
   var standartTimer = getFormTimer("value", "standart-timer");
   var pauseTimer = getFormTimer("value", "pause-timer");
-  var timerElement = getFormTimer("element", !changedInputId);
 
   var timerValue =
-    changedInputId == "standart-timer"
-      ? standartTimer
-      : changedInputId == "pause-timer"
-      ? pauseTimer
-      : timerValue == null;
+    timerType == "standart-timer" ? standartTimer : timerType == "pause-timer" ? pauseTimer : timerValue == null;
 
-  timerValue = validateTimerValue(timerValue, pauseTimer, standartTimer);
-
-  if (timerValue == null) {
-    setFormTimer(changedInputId, timerElement);
-  } else if (standartTimer == null || pauseTimer == null) {
-    setFormTimer(changedInputId, timerElement);
-  } else {
+  if (timerValue) {
     chrome.runtime.sendMessage(
       {
         action: "setTimer",
         data: {
           timer: timerValue,
-          type: changedInputId,
+          type: timerType,
         },
       },
       function (response) {
@@ -134,16 +123,10 @@ document.querySelector("#timer-form").addEventListener("change", async (event) =
 function updateTimer(increment, type) {
   var timerValue = getFormTimer("value", type);
   var timerElement = getFormTimer("element", type);
-  var standartTimer = getFormTimer("value", "standart-timer");
-  var pauseTimer = getFormTimer("value", "pause-timer");
   var newTimer = timerValue + increment;
 
-  timerValue = validateTimerValue(newTimer, pauseTimer, standartTimer);
-
-  if (timerValue == false) {
-    setFormTimer(type, timerElement);
-  } else {
-    timerElement.value = timerValue;
+  if (newTimer) {
+    timerElement.value = newTimer;
     timerElement.dispatchEvent(new Event("change", { bubbles: true }));
   }
 }
@@ -160,33 +143,36 @@ function getFormTimer(resultType, timerType) {
   var timerValue =
     timerType == "standart-timer" ? standartTimer : timerType == "pause-timer" ? pauseTimer : timerValue == null;
 
-  var validatedTimerValue = validateTimerValue(timerValue, pauseTimer, standartTimer);
+  var validatedTimerValue = validateTimerValue(timerValue, pauseTimer, standartTimer, timerType, timerElement);
 
-  if (validatedTimerValue == null) {
-    setFormTimer(timerType, timerElement);
-    return null;
-  } else {
+  if (validatedTimerValue) {
     return resultType == "value" ? validatedTimerValue : resultType == "element" ? timerElement : false;
   }
 }
 
-function setFormTimer(timerType, timerElement) {
-  getTimer(timerType).then((response) => {
+function setFormTimerFromStorage(timerType, timerElement) {
+  getStorageTimer(timerType).then((response) => {
     timerElement.value = response;
   });
 }
 
-function validateTimerValue(timerValue, pauseTimer, standartTimer) {
-  if (timerValue == isNaN) {
+function validateTimerValue(timerValue, pauseTimer, standartTimer, timerType, timerElement) {
+  var trimmedValue = timerValue.toString().trim();
+
+  if (isNaN(trimmedValue) || trimmedValue == null || trimmedValue == "") {
     sendSnackbarNotification("Número Inválido", "snack-bar-home");
+    setFormTimerFromStorage(timerType, timerElement);
     return null;
   } else if (pauseTimer <= standartTimer) {
     sendSnackbarNotification("Tempo de Pausa não pode ser menor que Tempo Padrão", "snack-bar-home");
+    setFormTimerFromStorage(timerType, timerElement);
     return null;
-  } else if (timerValue <= 0 || timerValue > 120) {
+  } else if (trimmedValue <= 0 || trimmedValue > 120) {
     sendSnackbarNotification("Escolha um número entre 1 e 120 (minutos)", "snack-bar-home");
+    setFormTimerFromStorage(timerType, timerElement);
     return null;
   } else {
-    return timerValue;
+    var parsedValue = parseInt(trimmedValue, 10);
+    return parsedValue;
   }
 }

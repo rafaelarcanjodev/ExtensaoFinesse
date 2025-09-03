@@ -36,13 +36,13 @@ function verifyTabsActive(callback) {
 // =========================================================
 
 async function startInterval(nameAlarm) {
-  var standartTimer = await getTimer("standart-timer");
+  var standartTimer = await getStorageTimer("standart-timer");
   var nameAlarm = nameAlarm || "checkAgentStatus";
 
   if (standartTimer == null) {
     setTimer(5, "standart-timer");
     setTimer(30, "pause-timer");
-    standartTimer = await getTimer("standart-timer");
+    standartTimer = await getStorageTimer("standart-timer");
   }
 
   log("### Intervalo de verificação [" + nameAlarm + "] iniciado com sucesso. Timer: " + standartTimer);
@@ -74,7 +74,7 @@ function stopAllIntervals() {
 //  Funções dos Timers da Extensão
 // =========================================================
 
-async function getTimer(type) {
+async function getStorageTimer(type) {
   return new Promise((resolve, reject) => {
     item = chrome.storage.local.get([type], function (item) {
       if (chrome.runtime.lastError) {
@@ -159,8 +159,8 @@ function checkAgentStatus() {
       var reasonCodeId = finesse.reasonCodeId ? finesse.reasonCodeId["text"] : null;
       reasonCodeId = parseInt(reasonCodeId);
       var finesseState = finesse.state ? finesse.state["text"] : null;
-      var standartTimer = await getTimer("standart-timer");
-      var pauseTimer = await getTimer("pause-timer");
+      var standartTimer = await getStorageTimer("standart-timer");
+      var pauseTimer = await getStorageTimer("pause-timer");
       var countTimer = (pauseTimer - standartTimer) * 60000;
 
       if (reasonCodeId == -1) {
@@ -202,7 +202,7 @@ async function setUserCredential(username, password, agentId) {
 
     if (finesse?.ApiErrors) {
       log("### Erro ao conectar ao Finesse:", finesse.ApiErrors);
-      return finesse;
+      return false;
     }
 
     if (finesse?.firstName) {
@@ -219,11 +219,11 @@ async function setUserCredential(username, password, agentId) {
       });
     } else {
       log("### Erro ao conectar ao Finesse: resposta inesperada");
-      return finesse;
+      return false;
     }
   } catch (error) {
     log("### Erro na conexão com Finesse:", error);
-    return finesse.status;
+    return false;
   }
 }
 
@@ -247,7 +247,7 @@ async function getUserCredentialsAndConnect() {
           resolve(finesse);
         } catch (error) {
           log("Erro na função getUserCredentialsAndConnect:" + error);
-          reject(finesse);
+          reject(error);
         }
       } else {
         resolve(null);
@@ -301,7 +301,7 @@ async function connectApiFinesse(username, password, agentId) {
     return finesse;
   } catch (error) {
     log("### [connectApiFinesse] Erro na conexão:", error);
-    return response;
+    return false;
   }
 }
 

@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Finesse Notifier",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Extensão de alerta de telefonia finesse para agentes Totvs",
-  "permissions": ["activeTab", "tabs", "storage", "notifications", "alarms", "scripting"],
+  "permissions": ["activeTab", "tabs", "storage", "notifications", "alarms"],
   "web_accessible_resources": [
     {
       "resources": ["audio/alarm.mp3"],
