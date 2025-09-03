@@ -62,22 +62,22 @@ document.querySelector("#btn-menu-logout").addEventListener("click", function (e
 
 document.querySelector("#btn-standart-timer-plus").addEventListener("click", function (event) {
   event.preventDefault();
-  updateTimer(1, "standartTimer");
+  updateTimer(1, "standart-timer");
 });
 
 document.querySelector("#btn-standart-timer-minus").addEventListener("click", function (event) {
   event.preventDefault();
-  updateTimer(-1, "standartTimer");
+  updateTimer(-1, "standart-timer");
 });
 
 document.querySelector("#btn-pause-timer-plus").addEventListener("click", function (event) {
   event.preventDefault();
-  updateTimer(1, "pauseTimer");
+  updateTimer(1, "pause-timer");
 });
 
 document.querySelector("#btn-pause-timer-minus").addEventListener("click", function (event) {
   event.preventDefault();
-  updateTimer(-1, "pauseTimer");
+  updateTimer(-1, "pause-timer");
 });
 
 document.querySelectorAll(".no-letters").forEach((input) => {
@@ -90,14 +90,14 @@ document.querySelector("#timer-form").addEventListener("change", async (event) =
   event.preventDefault();
 
   var changedInputId = event.target.id;
-  var standartTimer = getFormTimer("value", "standartTimer");
-  var pauseTimer = getFormTimer("value", "pauseTimer");
+  var standartTimer = getFormTimer("value", "standart-timer");
+  var pauseTimer = getFormTimer("value", "pause-timer");
   var timerElement = getFormTimer("element", !changedInputId);
 
   var timerValue =
-    changedInputId == "standartTimer"
+    changedInputId == "standart-timer"
       ? standartTimer
-      : changedInputId == "pauseTimer"
+      : changedInputId == "pause-timer"
       ? pauseTimer
       : timerValue == null;
 
@@ -134,8 +134,8 @@ document.querySelector("#timer-form").addEventListener("change", async (event) =
 function updateTimer(increment, type) {
   var timerValue = getFormTimer("value", type);
   var timerElement = getFormTimer("element", type);
-  var standartTimer = getFormTimer("value", "standartTimer");
-  var pauseTimer = getFormTimer("value", "pauseTimer");
+  var standartTimer = getFormTimer("value", "standart-timer");
+  var pauseTimer = getFormTimer("value", "pause-timer");
   var newTimer = timerValue + increment;
 
   timerValue = validateTimerValue(newTimer, pauseTimer, standartTimer);
@@ -154,11 +154,11 @@ function updateTimer(increment, type) {
 
 function getFormTimer(resultType, timerType) {
   var timerElement = document.getElementById(timerType);
-  var standartTimer = parseInt(document.getElementById("standartTimer").value, 10);
-  var pauseTimer = parseInt(document.getElementById("pauseTimer").value, 10);
+  var standartTimer = parseInt(document.getElementById("standart-timer").value, 10);
+  var pauseTimer = parseInt(document.getElementById("pause-timer").value, 10);
 
   var timerValue =
-    timerType == "standartTimer" ? standartTimer : timerType == "pauseTimer" ? pauseTimer : timerValue == null;
+    timerType == "standart-timer" ? standartTimer : timerType == "pause-timer" ? pauseTimer : timerValue == null;
 
   var validatedTimerValue = validateTimerValue(timerValue, pauseTimer, standartTimer);
 

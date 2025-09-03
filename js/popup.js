@@ -3,24 +3,20 @@
 // =========================================================
 
 document.addEventListener("DOMContentLoaded", () => {
-  // =========================================================
-  //  Definindo variáveis e recuperando valores
-  // =========================================================
-
   var formLogin = document.getElementById("login-form");
   var loginDiv = document.getElementById("login-div");
   var contentDiv = document.getElementById("content-div");
   var loadingModal = document.getElementById("loading-modal");
-  var standartTimer = document.getElementById("standartTimer");
-  var pauseTimer = document.getElementById("pauseTimer");
+  var standartTimer = document.getElementById("standart-timer");
+  var pauseTimer = document.getElementById("pause-timer");
 
   showDiv(loadingModal);
 
-  getTimer("standartTimer").then((response) => {
+  getTimer("standart-timer").then((response) => {
     standartTimer.value = response;
   });
 
-  getTimer("pauseTimer").then((response) => {
+  getTimer("pause-timer").then((response) => {
     pauseTimer.value = response;
   });
 
@@ -34,62 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
       hideDiv(loadingModal);
       showDiv(loginDiv);
       hideDiv(contentDiv);
-
-      // =========================================================
-      //  Início do listener que espera o envio do form de login
-      // =========================================================
-
-      formLogin.addEventListener("submit", (event) => {
-        event.preventDefault();
-
-        showDiv(loadingModal);
-
-        var username = document.getElementById("username").value;
-        var password = document.getElementById("password").value;
-        var agentId = document.getElementById("agentId").value;
-        username.trim();
-        password.trim();
-        agentId.trim();
-
-        if (username && password && agentId) {
-          chrome.runtime.sendMessage(
-            {
-              action: "setCredentials",
-              data: {
-                username: username,
-                password: password,
-                agentId: agentId,
-              },
-            },
-            async function (response) {
-              log("setCredentials - Response Front:");
-              log(response);
-
-              try {
-                if (!response) {
-                  throw new Error("Sem resposta do Servidor");
-                } else if (response.success) {
-                  window.location.reload();
-                } else if (response.success == false) {
-                  throw new Error("Verifique a VPN, Cisco, Finesse e Credenciais");
-                } else {
-                  throw new Error("Login Inválido");
-                }
-              } catch (error) {
-                log("entrou no catch");
-                log(error);
-                hideDiv(loadingModal);
-                sendSnackbarNotification(error.message);
-                loginFormDataRecover(username, password, agentId);
-                return false;
-              }
-            }
-          );
-        } else {
-          hideDiv(loadingModal);
-          sendSnackbarNotification("Preencha todos os campos");
-        }
-      });
+      startSubmitListener(formLogin, loadingModal);
     } else {
       showDiv(contentDiv);
       hideDiv(loadingModal);
@@ -98,6 +39,74 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+function startSubmitListener(formLogin, loadingModal) {
+  formLogin.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    showDiv(loadingModal);
+
+    var username = document.getElementById("username").value;
+    var password = document.getElementById("password").value;
+    var agentId = document.getElementById("agentId").value;
+    username = validateLogin(username);
+    password = validateLogin(password);
+    agentId = validateLogin(agentId);
+
+    if (username && password && agentId) {
+      chrome.runtime.sendMessage(
+        {
+          action: "setCredentials",
+          data: {
+            username: username,
+            password: password,
+            agentId: agentId,
+          },
+        },
+        async function (response) {
+          log("setCredentials - Response Front:");
+          log(response);
+
+          try {
+            if (!response) {
+              throw new Error("Sem resposta do Servidor");
+            } else if (response.success) {
+              window.location.reload();
+            } else if (response.success == false) {
+              throw new Error("Verifique a VPN, Cisco, Finesse e Credenciais");
+            } else {
+              throw new Error("Login Inválido");
+            }
+          } catch (error) {
+            log(error);
+            hideDiv(loadingModal);
+            sendSnackbarNotification(error.message);
+            loginFormDataRecover(username, password, agentId);
+            return false;
+          }
+        }
+      );
+    } else {
+      hideDiv(loadingModal);
+    }
+  });
+}
+
+function validateLogin(value) {
+  var trimmedValue = value.trim();
+
+  if (trimmedValue.length > 100) {
+    sendSnackbarNotification("Quantidade de caracteres excedida");
+    return null;
+  }
+
+  if (trimmedValue.length <= 0 || trimmedValue == null || trimmedValue == undefined) {
+    sendSnackbarNotification("Preencha todos os campos");
+    return null;
+  }
+
+  return trimmedValue;
+}
 
 function loginFormDataRecover(username, password, agentId) {
   document.getElementById("username").value = username;

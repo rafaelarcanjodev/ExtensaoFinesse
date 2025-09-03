@@ -36,13 +36,13 @@ function verifyTabsActive(callback) {
 // =========================================================
 
 async function startInterval(nameAlarm) {
-  var standartTimer = await getTimer("standartTimer");
+  var standartTimer = await getTimer("standart-timer");
   var nameAlarm = nameAlarm || "checkAgentStatus";
 
   if (standartTimer == null) {
-    setTimer(5, "standartTimer");
-    setTimer(30, "pauseTimer");
-    standartTimer = await getTimer("standartTimer");
+    setTimer(5, "standart-timer");
+    setTimer(30, "pause-timer");
+    standartTimer = await getTimer("standart-timer");
   }
 
   log("### Intervalo de verificação [" + nameAlarm + "] iniciado com sucesso. Timer: " + standartTimer);
@@ -52,9 +52,20 @@ async function startInterval(nameAlarm) {
 function stopinterval(nameAlarm) {
   chrome.alarms.clear(nameAlarm, (wasCleared) => {
     if (wasCleared) {
-      log("Intervalo de verificação [" + nameAlarm + "] parado com sucesso.");
+      log("### Intervalo de verificação [" + nameAlarm + "] parado com sucesso.");
     } else {
-      log("Não foi possível parar o intervalo de verificação [" + nameAlarm + "].");
+      log("### Não foi possível parar o intervalo de verificação [" + nameAlarm + "].");
+      stopAllIntervals();
+    }
+  });
+}
+
+function stopAllIntervals() {
+  chrome.alarms.clearAll((wasCleared) => {
+    if (wasCleared) {
+      log("### Todos os intervalos de verificação parados com sucesso.");
+    } else {
+      log("### Não foi possível parar todos os intervalo de verificação");
     }
   });
 }
@@ -148,8 +159,8 @@ function checkAgentStatus() {
       var reasonCodeId = finesse.reasonCodeId ? finesse.reasonCodeId["text"] : null;
       reasonCodeId = parseInt(reasonCodeId);
       var finesseState = finesse.state ? finesse.state["text"] : null;
-      var standartTimer = await getTimer("standartTimer");
-      var pauseTimer = await getTimer("pauseTimer");
+      var standartTimer = await getTimer("standart-timer");
+      var pauseTimer = await getTimer("pause-timer");
       var countTimer = (pauseTimer - standartTimer) * 60000;
 
       if (reasonCodeId == -1) {
@@ -188,11 +199,10 @@ function checkAgentStatus() {
 async function setUserCredential(username, password, agentId) {
   try {
     const finesse = await connectApiFinesse(username, password, agentId);
-    log("### Resposta do Finesse:" + finesse);
 
     if (finesse?.ApiErrors) {
       log("### Erro ao conectar ao Finesse:", finesse.ApiErrors);
-      return false;
+      return finesse;
     }
 
     if (finesse?.firstName) {
@@ -209,11 +219,11 @@ async function setUserCredential(username, password, agentId) {
       });
     } else {
       log("### Erro ao conectar ao Finesse: resposta inesperada");
-      return false;
+      return finesse;
     }
   } catch (error) {
     log("### Erro na conexão com Finesse:", error);
-    return false;
+    return finesse.status;
   }
 }
 
@@ -232,12 +242,12 @@ async function getUserCredentialsAndConnect() {
     getUserCredential(async (username, password, agentId) => {
       if (username && password && agentId) {
         try {
-          const finesse = await connectApiFinesse(username, password, agentId);
+          var finesse = await connectApiFinesse(username, password, agentId);
           log(finesse);
           resolve(finesse);
         } catch (error) {
           log("Erro na função getUserCredentialsAndConnect:" + error);
-          reject(error);
+          reject(finesse);
         }
       } else {
         resolve(null);
@@ -283,17 +293,15 @@ async function connectApiFinesse(username, password, agentId) {
 
     clearTimeout(timeoutId);
     if (!response.ok) {
-      log("### Erro na função connectApiFinesse com a API finnesse " + response.status);
-
-      throw new Error(`### HTTP error! status: ${response.status}`);
+      throw new Error(`### [connectApiFinesse] Response Not Okay. status: ${response.status}`);
     }
 
     const data = await response.text();
     const finesse = xmlToJson(data);
     return finesse;
   } catch (error) {
-    log("### Erro na conexão:", error.message);
-    return false;
+    log("### [connectApiFinesse] Erro na conexão:", error);
+    return response;
   }
 }
 

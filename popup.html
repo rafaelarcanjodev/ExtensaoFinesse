@@ -108,6 +108,7 @@
             name="username"
             placeholder="nome.sobrenome@jv01.local"
             title="nome.sobrenome@jv01.local"
+            maxlength="50"
             required
           />
         </div>
@@ -121,6 +122,7 @@
             name="agentId"
             placeholder="99.999.999"
             title="cpf sem o primeiro e os últimos dois números"
+            maxlength="11"
             required
           />
         </div>
@@ -134,6 +136,7 @@
             name="password"
             placeholder="123456"
             title="123456"
+            maxlength="20"
             required
           />
         </div>
@@ -168,7 +171,7 @@
         <form id="timer-form">
           <div>
             <label
-              for="standartTimer"
+              for="standart-timer"
               class="form-label"
               title="Definir tempo para ser notificado nas FALHAS de conexão"
               >Timer principal</label
@@ -177,7 +180,7 @@
               <input
                 type="text"
                 class="form-control rounded w-25 no-letters"
-                id="standartTimer"
+                id="standart-timer"
                 title="Definir tempo para ser notificado nas FALHAS de conexão"
                 maxlength="3"
                 required
@@ -217,14 +220,14 @@
           <br />
 
           <div>
-            <label for="pauseTimer" class="form-label" title="Definir tempo para ser notificado das PAUSAS do finesse"
+            <label for="pause-timer" class="form-label" title="Definir tempo para ser notificado das PAUSAS do finesse"
               >Timer de pausa</label
             >
             <div class="d-flex">
               <input
                 type="text"
                 class="form-control rounded w-25 no-letters"
-                id="pauseTimer"
+                id="pause-timer"
                 title="Definir tempo para ser notificado das PAUSAS do finesse"
                 maxlength="3"
                 required
@@ -286,7 +289,7 @@
     <!-- Footer -->
     <div class="footer d-block">
       <div id="footer-title-developer">Por Rafael Arcanjo &copy</div>
-      <div id="footer-title-version">v1.1.0</div>
+      <div id="footer-title-version">v1.1.1</div>
     </div>
 
     <!-- Front -->
