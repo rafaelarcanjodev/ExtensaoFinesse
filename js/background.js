@@ -151,6 +151,8 @@ function checkAgentStatus() {
   getUserCredentialsAndConnect()
     .then(async (finesse) => {
       if (!finesse) {
+        notification("playAudioDeviceError");
+        tabActiveFocus();
         log("Finesse não retornou informações");
         return;
       }
